@@ -133,27 +133,6 @@
 
   .footer { font-size: 11px; color: #888780; text-align: center; padding: 1rem 0; }
 
-  /* ── Panel de control del equipo ── */
-  .team-panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-  .team-panel-card { background: #FFFFFF; border-radius: 14px; padding: 16px; box-shadow: 5px 5px 12px rgba(0,0,0,0.08), -3px -3px 7px rgba(255,255,255,0.92); }
-  .team-panel-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .team-panel-name { font-weight: 600; font-size: 14px; }
-  .team-panel-role { font-size: 11px; color: #5F5E5A; }
-  .team-kpi-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-top: 0.5px solid rgba(0,0,0,0.06); font-size: 13px; }
-  .team-kpi-label { color: #5F5E5A; font-size: 12px; }
-  .team-kpi-value { font-weight: 600; font-variant-numeric: tabular-nums; }
-  .team-kpi-delta { font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
-  .delta-up { color: #173404; }
-  .delta-down { color: #791F1F; }
-  .delta-neutral { color: #888780; }
-  .team-summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
-  .team-summary-stat { background: white; border-radius: 12px; padding: 13px 15px; box-shadow: 4px 4px 9px rgba(0,0,0,0.08), -2px -2px 5px rgba(255,255,255,0.92); }
-  .team-summary-label { font-size: 11px; color: #5F5E5A; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-  .team-summary-value { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .team-summary-delta { font-size: 11px; font-weight: 500; margin-top: 2px; font-variant-numeric: tabular-nums; }
-  .eticket-bar-wrap { margin-top: 6px; }
-  .eticket-bar-track { height: 5px; background: rgba(225,222,213,0.85); border-radius: 999px; overflow: hidden; margin-top: 4px; box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1); }
-  .eticket-bar-fill { height: 100%; border-radius: 999px; transition: width 0.3s; }
 
   .confidential-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 45; background: #1A2E5A; color: rgba(255,255,255,0.82); font-size: 11px; letter-spacing: 0.03em; padding: 9px 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .confidential-bar .conf-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0; }
@@ -393,13 +372,6 @@
     <h2 style="margin-bottom: 4px;">Resumen de briefing</h2>
     <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">KPI crítico de cada asesor, impacto de mejorarlo y espacio para el compromiso de la junta.</p>
     <div id="briefing-list"></div>
-  </div>
-
-  <div class="surface" id="section-team-panel">
-    <h2 style="margin-bottom: 4px;">Panel de control del equipo</h2>
-    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 16px;">Comparativa semana a semana: ventas, ticket, UPT y ticket electrónico por asesor.</p>
-    <div id="team-panel-summary" class="team-summary-bar"></div>
-    <div id="team-panel-content" class="team-panel-grid"></div>
   </div>
 
   <div class="surface">
@@ -1455,7 +1427,6 @@ const debouncedHeavyUpdate = debounce(() => {
 
   renderStoreStats();
   renderBrechas();
-  renderTeamPanel();
   updateCharts();
   renderProjection();
   refreshAdvisorOrder();
@@ -1510,7 +1481,6 @@ function onDeleteAdvisor(id) {
   document.getElementById('store-meta').value = state.storeMeta;
   document.getElementById('store-min').value = state.storeMin;
   renderAdvisors();
-  renderTeamPanel();
   renderStoreStats();
   renderBrechas();
   updateCharts();
@@ -1534,7 +1504,6 @@ function onAddAdvisor() {
   document.getElementById('store-meta').value = state.storeMeta;
   document.getElementById('store-min').value = state.storeMin;
   renderAdvisors();
-  renderTeamPanel();
   renderStoreStats();
   renderBrechas();
   updateCharts();
@@ -1773,8 +1742,8 @@ function exitPresentMode() {
   document.getElementById('present-bar').style.display = 'none';
 }
 
-// ===== Panel de control del equipo =====
-function renderTeamPanel() {
+// ===== _removed_ =====
+function _noop_teamPanel() {
   const summary = document.getElementById('team-panel-summary');
   const content = document.getElementById('team-panel-content');
   if (!summary || !content) return;
@@ -1886,7 +1855,6 @@ function renderAll() {
   renderHeader();
   renderStoreStats();
   renderBrechas();
-  renderTeamPanel();
   renderAdvisors();
   renderBriefing();
   updateCharts();
@@ -1899,7 +1867,6 @@ state = loadState();
 renderHeader();
 renderStoreStats();
 renderBrechas();
-renderTeamPanel();
 renderAdvisors();
 renderBriefing();
 initCharts();
