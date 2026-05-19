@@ -1104,34 +1104,35 @@ function initCharts() {
 }
 
 function updateCharts() {
-  const sorted = getSortedAdvisors();
-  const labels = sorted.map(a => shortName(a.name));
-  const colors = sorted.map(a => STATUS_COLOR[statusKey(a.alcanceMin)]);
+  const all = getSortedAdvisors();
   const s = calcStore();
 
-  // Ticket
-  charts.ticket.data.labels = labels;
-  charts.ticket.data.datasets[0].data = sorted.map(a => Math.round(a.ticket));
-  charts.ticket.data.datasets[0].backgroundColor = colors;
-  const maxTicket = Math.max(0, ...sorted.map(a => a.ticket));
+  // Ticket — orden de mayor a menor ticket
+  const byTicket = [...all].sort((x, y) => y.ticket - x.ticket);
+  charts.ticket.data.labels = byTicket.map(a => shortName(a.name));
+  charts.ticket.data.datasets[0].data = byTicket.map(a => Math.round(a.ticket));
+  charts.ticket.data.datasets[0].backgroundColor = byTicket.map(a => STATUS_COLOR[statusKey(a.alcanceMin)]);
+  const maxTicket = Math.max(0, ...byTicket.map(a => a.ticket));
   charts.ticket.options.scales.x.max = Math.ceil(maxTicket * 1.18 / 100) * 100;
   charts.ticket.update('none');
   document.getElementById('ticket-avg-label').textContent = 'Promedio de tienda: ' + fmtMXN(s.avgTicket);
 
-  // UPT
-  charts.upt.data.labels = labels;
-  charts.upt.data.datasets[0].data = sorted.map(a => parseFloat(a.upt.toFixed(2)));
-  charts.upt.data.datasets[0].backgroundColor = colors;
-  const maxUpt = Math.max(0, ...sorted.map(a => a.upt));
+  // UPT — orden de mayor a menor UPT
+  const byUpt = [...all].sort((x, y) => y.upt - x.upt);
+  charts.upt.data.labels = byUpt.map(a => shortName(a.name));
+  charts.upt.data.datasets[0].data = byUpt.map(a => parseFloat(a.upt.toFixed(2)));
+  charts.upt.data.datasets[0].backgroundColor = byUpt.map(a => STATUS_COLOR[statusKey(a.alcanceMin)]);
+  const maxUpt = Math.max(0, ...byUpt.map(a => a.upt));
   charts.upt.options.scales.x.max = Math.max(2, maxUpt * 1.18);
   charts.upt.update('none');
   document.getElementById('upt-avg-label').textContent = 'Promedio de tienda: ' + fmtUpt(s.upt);
 
-  // Alcance vs meta
-  charts.alcance.data.labels = labels;
-  charts.alcance.data.datasets[0].data = sorted.map(a => parseFloat(a.alcanceMeta.toFixed(2)));
-  charts.alcance.data.datasets[0].backgroundColor = sorted.map(a => a.alcanceMeta >= 100 ? '#639922' : a.alcanceMeta >= 90 ? '#EF9F27' : '#E24B4A');
-  const maxAlc = Math.max(0, ...sorted.map(a => a.alcanceMeta));
+  // Alcance vs meta — orden de mayor a menor alcance
+  const byAlc = [...all].sort((x, y) => y.alcanceMeta - x.alcanceMeta);
+  charts.alcance.data.labels = byAlc.map(a => shortName(a.name));
+  charts.alcance.data.datasets[0].data = byAlc.map(a => parseFloat(a.alcanceMeta.toFixed(2)));
+  charts.alcance.data.datasets[0].backgroundColor = byAlc.map(a => a.alcanceMeta >= 100 ? '#639922' : a.alcanceMeta >= 90 ? '#EF9F27' : '#E24B4A');
+  const maxAlc = Math.max(0, ...byAlc.map(a => a.alcanceMeta));
   charts.alcance.options.scales.x.max = Math.max(120, maxAlc * 1.15);
   charts.alcance.update('none');
 }
