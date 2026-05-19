@@ -223,6 +223,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <style>
+  /* El header entra con CSS para no depender de GSAP */
+  @keyframes _headerIn {
+    from { opacity: 0; transform: translateY(-28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .header { animation: _headerIn 0.75s cubic-bezier(0.16,1,0.3,1) 0.1s both; }
+
   #login-overlay {
     position: fixed; inset: 0; z-index: 9999;
     background: linear-gradient(145deg, #EEF1F8 0%, #FAFAF7 45%, #FDF5F5 100%);
@@ -3048,22 +3055,18 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
 
   /* ══════════════════════════════════════════════
      PÁGINA PRINCIPAL — Entrances con IntersectionObserver
-     Regla: SOLO se oculta un elemento si está fuera
-     del viewport en este momento. Nunca ocultar lo
-     que ya es visible → evita secciones que desaparecen.
+     Regla: el header NUNCA se oculta. El resto solo
+     se oculta si está claramente fuera del viewport.
+     Safety net: fuerza visibilidad a los 1.5 s.
   ══════════════════════════════════════════════ */
 
-  const VH = window.innerHeight;
-
-  /* — Header desde arriba (siempre visible al cargar) — */
-  gsap.from('.header', {
-    opacity: 0, y: -36,
-    duration: 0.8, ease: 'expo.out', delay: 0.1,
-  });
+  /* VH con mínimo de seguridad: si window.innerHeight es 0
+     (ej. render invisible) ningún elemento se oculta. */
+  const VH = window.innerHeight > 100 ? window.innerHeight : 9999;
 
   /* — Secciones .surface: slide-up al entrar en viewport — */
   gsap.utils.toArray('.surface').forEach(el => {
-    if (el.getBoundingClientRect().top >= VH * 0.92) {
+    if (el.getBoundingClientRect().top > VH * 0.85) {
       gsap.set(el, { opacity: 0, y: 44, scale: 0.985 });
     }
     new IntersectionObserver((entries, obs) => {
@@ -3072,13 +3075,13 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
         obs.unobserve(en.target);
         gsap.to(en.target, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'power3.out' });
       });
-    }, { threshold: 0.08 }).observe(el);
+    }, { threshold: 0.06 }).observe(el);
   });
 
   /* — Stat cards: stagger de scale al entrar en viewport — */
   document.querySelectorAll('#store-stats, #store-ops, #brechas-stats').forEach(c => {
     if (!c) return;
-    if (c.getBoundingClientRect().top >= VH * 0.92) {
+    if (c.getBoundingClientRect().top > VH * 0.85) {
       gsap.set(c.querySelectorAll('.stat'), { opacity: 0, scale: 0.82, y: 22 });
     }
     new IntersectionObserver((entries, obs) => {
@@ -3090,12 +3093,12 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
           duration: 0.52, ease: 'back.out(1.6)', stagger: 0.07,
         });
       });
-    }, { threshold: 0.1 }).observe(c);
+    }, { threshold: 0.08 }).observe(c);
   });
 
   /* — Gráficas: slide desde la izquierda — */
   gsap.utils.toArray('.chart-wrap').forEach(el => {
-    if (el.getBoundingClientRect().top >= VH * 0.92) {
+    if (el.getBoundingClientRect().top > VH * 0.85) {
       gsap.set(el, { opacity: 0, x: -30 });
     }
     new IntersectionObserver((entries, obs) => {
@@ -3104,7 +3107,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
         obs.unobserve(en.target);
         gsap.to(en.target, { opacity: 1, x: 0, duration: 0.65, ease: 'power2.out' });
       });
-    }, { threshold: 0.08 }).observe(el);
+    }, { threshold: 0.06 }).observe(el);
   });
 
   /* — Advisor cards: stagger al renderizar — */
@@ -3114,7 +3117,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     cards.forEach(c => c.setAttribute('data-anim-done', '1'));
     const list = document.getElementById('advisor-list');
     if (!list) return;
-    if (list.getBoundingClientRect().top >= VH * 0.92) {
+    if (list.getBoundingClientRect().top > VH * 0.85) {
       gsap.set(cards, { opacity: 0, x: -38 });
     }
     new IntersectionObserver((entries, obs) => {
@@ -3123,8 +3126,18 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
         obs.unobserve(en.target);
         gsap.to(cards, { opacity: 1, x: 0, duration: 0.55, ease: 'power3.out', stagger: 0.08 });
       });
-    }, { threshold: 0.05 }).observe(list);
+    }, { threshold: 0.04 }).observe(list);
   }
+
+  /* — Safety net: después de 1.5 s libera cualquier
+     elemento que haya quedado invisible por error — */
+  setTimeout(() => {
+    document.querySelectorAll('.surface, .stat, .chart-wrap, .advisor-card, .footer').forEach(el => {
+      if (parseFloat(window.getComputedStyle(el).opacity) < 0.1) {
+        gsap.to(el, { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.4, ease: 'power2.out' });
+      }
+    });
+  }, 1500);
   setTimeout(animateAdvisorCards, 400);
 
   /* ══════════════════════════════════════════════
