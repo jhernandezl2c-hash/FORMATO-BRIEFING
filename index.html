@@ -133,6 +133,28 @@
 
   .footer { font-size: 11px; color: #888780; text-align: center; padding: 1rem 0; }
 
+  /* ── Panel de control del equipo ── */
+  .team-panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .team-panel-card { background: #FFFFFF; border-radius: 14px; padding: 16px; box-shadow: 5px 5px 12px rgba(0,0,0,0.08), -3px -3px 7px rgba(255,255,255,0.92); }
+  .team-panel-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .team-panel-name { font-weight: 600; font-size: 14px; }
+  .team-panel-role { font-size: 11px; color: #5F5E5A; }
+  .team-kpi-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-top: 0.5px solid rgba(0,0,0,0.06); font-size: 13px; }
+  .team-kpi-label { color: #5F5E5A; font-size: 12px; }
+  .team-kpi-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .team-kpi-delta { font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .delta-up { color: #173404; }
+  .delta-down { color: #791F1F; }
+  .delta-neutral { color: #888780; }
+  .team-summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .team-summary-stat { background: white; border-radius: 12px; padding: 13px 15px; box-shadow: 4px 4px 9px rgba(0,0,0,0.08), -2px -2px 5px rgba(255,255,255,0.92); }
+  .team-summary-label { font-size: 11px; color: #5F5E5A; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .team-summary-value { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .team-summary-delta { font-size: 11px; font-weight: 500; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .eticket-bar-wrap { margin-top: 6px; }
+  .eticket-bar-track { height: 5px; background: rgba(225,222,213,0.85); border-radius: 999px; overflow: hidden; margin-top: 4px; box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1); }
+  .eticket-bar-fill { height: 100%; border-radius: 999px; transition: width 0.3s; }
+
   .confidential-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 45; background: #1A2E5A; color: rgba(255,255,255,0.82); font-size: 11px; letter-spacing: 0.03em; padding: 9px 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .confidential-bar .conf-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0; }
   body.present-mode .confidential-bar { display: none; }
@@ -373,6 +395,13 @@
     <div id="briefing-list"></div>
   </div>
 
+  <div class="surface" id="section-team-panel">
+    <h2 style="margin-bottom: 4px;">Panel de control del equipo</h2>
+    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 16px;">Comparativa semana a semana: ventas, ticket, UPT y ticket electrónico por asesor.</p>
+    <div id="team-panel-summary" class="team-summary-bar"></div>
+    <div id="team-panel-content" class="team-panel-grid"></div>
+  </div>
+
   <div class="surface">
     <h2 style="margin-bottom: 12px;">Desempeño por asesor</h2>
     <div id="advisor-list"></div>
@@ -539,9 +568,9 @@ const DEFAULT_STATE = {
   projConvTarget: null,
   projTicketTarget: null,
   advisors: [
-    { id: 'a1', name: 'Asesor 1', role: 'Gerente',    meta: 20000, min: 0, sales: 0, tx: 0, units: 0, traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0 },
-    { id: 'a2', name: 'Asesor 2', role: 'Subgerente', meta: 35000, min: 0, sales: 0, tx: 0, units: 0, traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0 },
-    { id: 'a3', name: 'Asesor 3', role: 'Vendedor',   meta: 60000, min: 0, sales: 0, tx: 0, units: 0, traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0 }
+    { id: 'a1', name: 'Asesor 1', role: 'Gerente',    meta: 20000, min: 0, sales: 0, tx: 0, units: 0, traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0, eticket: 0, eticketMeta: 0, prevEticket: 0 },
+    { id: 'a2', name: 'Asesor 2', role: 'Subgerente', meta: 35000, min: 0, sales: 0, tx: 0, units: 0, traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0, eticket: 0, eticketMeta: 0, prevEticket: 0 },
+    { id: 'a3', name: 'Asesor 3', role: 'Vendedor',   meta: 60000, min: 0, sales: 0, tx: 0, units: 0, traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0, eticket: 0, eticketMeta: 0, prevEticket: 0 }
   ]
 };
 
@@ -572,7 +601,7 @@ function loadState() {
           projConvTarget: parsed.projConvTarget ?? null,
           projTicketTarget: parsed.projTicketTarget ?? null,
           advisors: (parsed.advisors || []).map(a => ({
-            traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0,
+            traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0, eticket: 0, eticketMeta: 0, prevEticket: 0,
             ...a
           }))
         };
@@ -608,7 +637,7 @@ async function autoLoadPBI() {
       const prev = state.advisors.find(p => p.name === a.name);
       return Object.assign({
         id: a.name, role: 'Vendedor', meta: 0, min: 0,
-        traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0
+        traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0, eticket: 0, eticketMeta: 0, prevEticket: 0
       }, prev || {}, a, { min: computeMin(a.meta || (prev && prev.meta) || 0) });
     });
     state = normalizeDerivedFields(state);
@@ -915,6 +944,14 @@ function renderAdvisors() {
             <label>Tráfico del asesor</label>
             <input type="text" data-field="traffic" data-id="${a.id}" inputmode="numeric" autocomplete="off" value="${a.traffic || ''}">
           </div>
+          <div class="input-cell">
+            <label>Ticket electrónico</label>
+            <input type="text" data-field="eticket" data-id="${a.id}" inputmode="numeric" autocomplete="off" value="${a.eticket || ''}">
+          </div>
+          <div class="input-cell">
+            <label>Meta ticket elect.</label>
+            <input type="text" data-field="eticketMeta" data-id="${a.id}" inputmode="numeric" autocomplete="off" value="${a.eticketMeta || ''}">
+          </div>
         </div>
 
         <p class="section-label" style="margin: 4px 0 6px; padding: 0 10px;">Semana anterior (comparativa)</p>
@@ -931,6 +968,10 @@ function renderAdvisors() {
             <label>UPT sem. ant.</label>
             <input type="text" data-field="prevUpt" data-id="${a.id}" inputmode="decimal" autocomplete="off" value="${a.prevUpt || ''}">
           </div>
+          <div class="input-cell">
+            <label>Ticket elect. sem. ant.</label>
+            <input type="text" data-field="prevEticket" data-id="${a.id}" inputmode="numeric" autocomplete="off" value="${a.prevEticket || ''}">
+          </div>
         </div>
 
         <div class="chip-row" style="margin-top: 8px;">
@@ -939,6 +980,7 @@ function renderAdvisors() {
           ${c.conv !== null ? `<span class="chip chip-strong" data-display="conv">Conv. ${c.conv.toFixed(2)}%</span>` : ''}
           <span class="chip" data-display="alcance-meta">${fmtPct(c.alcanceMeta)} vs meta</span>
           <span class="chip" data-display="brecha">${c.brecha > 0 ? 'Brecha ' + fmtMXN(c.brecha) : 'Excedente +' + fmtMXN(-c.brecha)}</span>
+          ${(a.eticket > 0 || a.eticketMeta > 0) ? `<span class="chip" style="background:#E8EDF5;color:#1A2E5A;" data-display="eticket">🎫 ${a.eticket}${a.eticketMeta > 0 ? '/' + a.eticketMeta : ''} e-ticket</span>` : ''}
         </div>
       </div>
     `;
@@ -1413,6 +1455,7 @@ const debouncedHeavyUpdate = debounce(() => {
 
   renderStoreStats();
   renderBrechas();
+  renderTeamPanel();
   updateCharts();
   renderProjection();
   refreshAdvisorOrder();
@@ -1467,6 +1510,7 @@ function onDeleteAdvisor(id) {
   document.getElementById('store-meta').value = state.storeMeta;
   document.getElementById('store-min').value = state.storeMin;
   renderAdvisors();
+  renderTeamPanel();
   renderStoreStats();
   renderBrechas();
   updateCharts();
@@ -1480,7 +1524,9 @@ function onAddAdvisor() {
   const id = 'a' + Date.now();
   state.advisors.push({
     id, name: 'Nuevo asesor', role: 'Vendedor',
-    meta: 0, min: 0, sales: 0, tx: 0, units: 0
+    meta: 0, min: 0, sales: 0, tx: 0, units: 0,
+    traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0,
+    eticket: 0, eticketMeta: 0, prevEticket: 0
   });
   // Recompute store totals (no change since meta=0, but for consistency)
   state.storeMeta = sumMetas(state.advisors);
@@ -1488,6 +1534,7 @@ function onAddAdvisor() {
   document.getElementById('store-meta').value = state.storeMeta;
   document.getElementById('store-min').value = state.storeMin;
   renderAdvisors();
+  renderTeamPanel();
   renderStoreStats();
   renderBrechas();
   updateCharts();
@@ -1726,11 +1773,120 @@ function exitPresentMode() {
   document.getElementById('present-bar').style.display = 'none';
 }
 
+// ===== Panel de control del equipo =====
+function renderTeamPanel() {
+  const summary = document.getElementById('team-panel-summary');
+  const content = document.getElementById('team-panel-content');
+  if (!summary || !content) return;
+
+  const totalSalesCurr = state.advisors.reduce((s, a) => s + (a.sales || 0), 0);
+  const totalSalesPrev = state.advisors.reduce((s, a) => s + (a.prevSales || 0), 0);
+  const totalEticket   = state.advisors.reduce((s, a) => s + (a.eticket || 0), 0);
+  const totalEticketMeta = state.advisors.reduce((s, a) => s + (a.eticketMeta || 0), 0);
+  const totalEticketPrev = state.advisors.reduce((s, a) => s + (a.prevEticket || 0), 0);
+
+  const salesDelta = totalSalesPrev > 0 ? totalSalesCurr - totalSalesPrev : null;
+  const eticketDelta = totalEticketPrev > 0 ? totalEticket - totalEticketPrev : null;
+  const eticketPct = totalEticketMeta > 0 ? Math.round(totalEticket / totalEticketMeta * 100) : null;
+
+  const deltaHtml = (v, fmt) => {
+    if (v === null) return '<span class="delta-neutral" style="font-size:11px;">Sin datos sem. ant.</span>';
+    const cls = v >= 0 ? 'delta-up' : 'delta-down';
+    const arrow = v >= 0 ? '▲' : '▼';
+    return `<span class="${cls}" style="font-size:11px;">${arrow} ${fmt(Math.abs(v))} vs sem. ant.</span>`;
+  };
+
+  summary.innerHTML = `
+    <div class="team-summary-stat">
+      <div class="team-summary-label">Ventas equipo</div>
+      <div class="team-summary-value" style="color:#1A2E5A;">${fmtMXN(totalSalesCurr)}</div>
+      <div class="team-summary-delta">${deltaHtml(salesDelta, fmtMXN)}</div>
+    </div>
+    <div class="team-summary-stat">
+      <div class="team-summary-label">Ticket electrónico</div>
+      <div class="team-summary-value" style="color:${eticketPct !== null && eticketPct >= 100 ? '#173404' : eticketPct !== null && eticketPct >= 80 ? '#854F0B' : '#791F1F'};">${totalEticket}${totalEticketMeta > 0 ? ' / ' + totalEticketMeta : ''}</div>
+      <div class="team-summary-delta">${eticketPct !== null ? `<span style="font-size:11px;font-weight:600;">${eticketPct}% del objetivo</span> ` : ''}${deltaHtml(eticketDelta, v => v + ' e-ticket' + (v !== 1 ? 's' : ''))}</div>
+    </div>
+    ${totalEticketMeta > 0 ? `<div class="team-summary-stat" style="grid-column: 1 / -1;">
+      <div class="team-summary-label" style="margin-bottom:6px;">Avance e-ticket equipo</div>
+      <div style="background:rgba(225,222,213,0.85);border-radius:999px;height:8px;overflow:hidden;box-shadow:inset 1px 1px 3px rgba(0,0,0,0.1);">
+        <div style="height:100%;border-radius:999px;width:${Math.min(100, eticketPct || 0)}%;background:${(eticketPct||0) >= 100 ? '#639922' : (eticketPct||0) >= 80 ? '#EF9F27' : '#E24B4A'};transition:width 0.4s;"></div>
+      </div>
+    </div>` : ''}
+  `;
+
+  content.innerHTML = '';
+  state.advisors.forEach(a => {
+    const c = calcAdvisor(a);
+    const status = statusKey(c.alcanceMin);
+    const initials = getInitials(a.name);
+
+    const salesDeltaA  = a.prevSales  > 0 ? a.sales - a.prevSales   : null;
+    const ticketDeltaA = a.prevTicket > 0 ? c.ticket - a.prevTicket  : null;
+    const uptDeltaA    = a.prevUpt    > 0 ? c.upt    - a.prevUpt     : null;
+    const eDeltaA      = a.prevEticket > 0 ? (a.eticket || 0) - a.prevEticket : null;
+    const ePct         = a.eticketMeta > 0 ? Math.round((a.eticket || 0) / a.eticketMeta * 100) : null;
+
+    const kpiRow = (label, value, deltaVal, fmt, fmtDelta) => {
+      const hasDelta = deltaVal !== null;
+      const cls = hasDelta ? (deltaVal >= 0 ? 'delta-up' : 'delta-down') : 'delta-neutral';
+      const arrow = hasDelta ? (deltaVal >= 0 ? '▲' : '▼') : '';
+      const deltaStr = hasDelta ? `${arrow} ${fmtDelta(Math.abs(deltaVal))}` : '—';
+      return `<div class="team-kpi-row">
+        <span class="team-kpi-label">${label}</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+          <span class="team-kpi-value">${value}</span>
+          <span class="team-kpi-delta ${cls}">${deltaStr}</span>
+        </span>
+      </div>`;
+    };
+
+    const eticketRow = () => {
+      const curr = a.eticket || 0;
+      const meta = a.eticketMeta || 0;
+      const hasDelta = a.prevEticket > 0;
+      const cls = hasDelta ? (eDeltaA >= 0 ? 'delta-up' : 'delta-down') : 'delta-neutral';
+      const arrow = hasDelta ? (eDeltaA >= 0 ? '▲' : '▼') : '';
+      const deltaStr = hasDelta ? `${arrow} ${Math.abs(eDeltaA)}` : '—';
+      const barPct = meta > 0 ? Math.min(100, Math.round(curr / meta * 100)) : null;
+      const barColor = barPct === null ? '#888' : barPct >= 100 ? '#639922' : barPct >= 80 ? '#EF9F27' : '#E24B4A';
+      return `<div class="team-kpi-row" style="flex-direction:column;align-items:stretch;gap:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span class="team-kpi-label">Ticket electrónico</span>
+          <span style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+            <span class="team-kpi-value" style="color:${barColor};">${curr}${meta > 0 ? ' / ' + meta : ''}${ePct !== null ? ' (' + ePct + '%)' : ''}</span>
+            <span class="team-kpi-delta ${cls}">${deltaStr}</span>
+          </span>
+        </div>
+        ${meta > 0 ? `<div class="eticket-bar-track"><div class="eticket-bar-fill" style="width:${barPct}%;background:${barColor};"></div></div>` : ''}
+      </div>`;
+    };
+
+    const card = document.createElement('div');
+    card.className = 'team-panel-card';
+    card.innerHTML = `
+      <div class="team-panel-head">
+        <div class="avatar av-${status}">${initials}</div>
+        <div>
+          <div class="team-panel-name">${a.name}</div>
+          <div class="team-panel-role">${a.role}</div>
+        </div>
+      </div>
+      ${kpiRow('Ventas', fmtMXN(a.sales), salesDeltaA, fmtMXN, fmtMXN)}
+      ${kpiRow('Ticket promedio', fmtMXN(c.ticket), ticketDeltaA, fmtMXN, fmtMXN)}
+      ${kpiRow('UPT', fmtUpt(c.upt), uptDeltaA, v => v.toFixed(2), v => v.toFixed(2))}
+      ${eticketRow()}
+    `;
+    content.appendChild(card);
+  });
+}
+
 // ===== Render all =====
 function renderAll() {
   renderHeader();
   renderStoreStats();
   renderBrechas();
+  renderTeamPanel();
   renderAdvisors();
   renderBriefing();
   updateCharts();
@@ -1743,6 +1899,7 @@ state = loadState();
 renderHeader();
 renderStoreStats();
 renderBrechas();
+renderTeamPanel();
 renderAdvisors();
 renderBriefing();
 initCharts();
@@ -2015,9 +2172,12 @@ document.getElementById('btn-pbi').addEventListener('click', openPBIModal);
           units:      colUnits   ? toNum(row[colUnits])   : 0,
           traffic:    colTraffic ? toNum(row[colTraffic]) : 0,
           note:       existing ? existing.note : '',
-          prevSales:  existing ? existing.prevSales  : 0,
-          prevTicket: existing ? existing.prevTicket : 0,
-          prevUpt:    existing ? existing.prevUpt    : 0,
+          prevSales:    existing ? existing.prevSales    : 0,
+          prevTicket:   existing ? existing.prevTicket   : 0,
+          prevUpt:      existing ? existing.prevUpt      : 0,
+          eticket:      existing ? existing.eticket      : 0,
+          eticketMeta:  existing ? existing.eticketMeta  : 0,
+          prevEticket:  existing ? existing.prevEticket  : 0,
         };
       })
       .filter(Boolean);
