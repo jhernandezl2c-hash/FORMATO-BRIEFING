@@ -1342,7 +1342,7 @@ function renderSimulator() {
       <span class="sim-name">${shortName(a.name)}</span>
       <input type="range" min="${minUpt.toFixed(2)}" max="${maxUpt.toFixed(2)}" step="0.01" value="${initialUpt.toFixed(2)}" data-sim-upt="${a.id}">
       <span class="sim-val" data-sim-display="upt">${fmtUpt(initialUpt)}</span>
-      <span class="sim-sales" data-sim-display="sales">${fmtMXN(c.sales || 0)}</span>
+      <span class="sim-sales" data-sim-display="sales">${fmtMXN(a.sales || 0)}</span>
       <span class="sim-delta" data-sim-display="delta">+$0</span>
     `;
     list.appendChild(row);
@@ -1767,9 +1767,9 @@ function exitPresentMode() {
 }
 
 // ===== _removed_ =====
-function _noop_teamPanel() {
-  const summary = document.getElementById('team-panel-summary');
-  const content = document.getElementById('team-panel-content');
+function _noop_teamPanel() { return; // removed
+  const summary = null;
+  const content = null;
   if (!summary || !content) return;
 
   const totalSalesCurr = state.advisors.reduce((s, a) => s + (a.sales || 0), 0);
