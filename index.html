@@ -1454,7 +1454,7 @@ const debouncedHeavyUpdate = debounce(() => {
   refreshAdvisorOrder();
   renderSimulator();
   renderBriefing();
-  checkCelebrations();
+  if (_celebCheckPending) { checkCelebrations(); _celebCheckPending = false; }
 }, 300);
 
 function onAdvisorNumberChange(id, field, value) {
@@ -1477,6 +1477,9 @@ function onAdvisorNumberChange(id, field, value) {
 
   // Save to localStorage on every keystroke (fast, synchronous, no DOM impact)
   saveState();
+
+  // Solo marcar celebración pendiente si cambió venta o meta (los únicos que afectan alcanceMeta)
+  if (field === 'sales' || field === 'meta') _celebCheckPending = true;
 
   // Defer everything else: charts, store stats, projection, reorder, simulator
   debouncedHeavyUpdate();
@@ -1654,6 +1657,7 @@ function onReset() {
   state = normalizeDerivedFields(JSON.parse(JSON.stringify(DEFAULT_STATE)));
   simUpts = {};
   celebrated.clear();
+  _celebCheckPending = false;
   renderAll();
   saveState();
   showToast('Datos restaurados');
@@ -1876,6 +1880,7 @@ function _noop_teamPanel() { return; // removed
 
 // ===== Celebraciones =====
 const celebrated = new Set();
+let _celebCheckPending = false;
 const CELEB_COLORS = ['#1A2E5A','#C8102E','#639922','#EF9F27','#9b59b6','#3498db','#e74c3c','#f1c40f','#2ecc71','#e91e8c'];
 
 function _confettiParticles(cx, cy, count, opts) {
@@ -2031,8 +2036,12 @@ function checkCelebrations() {
     const c = calcAdvisor(a);
     if (c.alcanceMeta >= 100 && !celebrated.has(a.id)) {
       celebrated.add(a.id);
-      const card = document.querySelector(`[data-advisor="${a.id}"]`);
-      if (card) setTimeout(() => celebrateAdvisor(card, a.name), 250);
+      const _aid = a.id, _aname = a.name;
+      // Esperar a que el re-sort (refreshAdvisorOrder) termine visualmente, luego re-consultar la posición final del card
+      setTimeout(() => {
+        const freshCard = document.querySelector(`[data-advisor="${_aid}"]`);
+        if (freshCard) celebrateAdvisor(freshCard, _aname);
+      }, 520);
     } else if (c.alcanceMeta < 100) {
       celebrated.delete(a.id);
     }
