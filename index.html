@@ -428,7 +428,7 @@
       <span class="legend-item"><span class="legend-swatch" style="background: #E24B4A;"></span>Bajo mínimo</span>
     </div>
 
-    <p style="font-size: 13px; font-weight: 500; margin: 8px 0 4px;">Ticket promedio</p>
+    <p style="font-size: 13px; font-weight: 500; margin: 8px 0 4px;">AUR (Average Unit Retail)</p>
     <p style="font-size: 12px; color: #5F5E5A; margin-bottom: 8px;" id="ticket-avg-label">Promedio de tienda: —</p>
     <div class="chart-wrap"><canvas id="chart-ticket"></canvas></div>
 
@@ -682,8 +682,10 @@ function calcStore() {
   const totalUnits = state.advisors.reduce((s, a) => s + (a.units || 0), 0);
   const totalMetas = round2(state.advisors.reduce((s, a) => s + (a.meta || 0), 0));
   const sumMin = state.advisors.reduce((s, a) => s + (a.min || 0), 0);
+  const totalEticket = state.advisors.reduce((s, a) => s + (a.eticket || 0), 0);
   return {
-    totalSales, totalTx, totalUnits, totalMetas, sumMin,
+    totalSales, totalTx, totalUnits, totalMetas, sumMin, totalEticket,
+    alcanceEticket: totalTx > 0 ? totalEticket / totalTx * 100 : 0,
     avgTicket: totalTx > 0 ? totalSales / totalTx : 0,
     upt: totalTx > 0 ? totalUnits / totalTx : 0,
     alcanceMin: state.storeMin > 0 ? totalSales / state.storeMin * 100 : 0,
@@ -737,7 +739,7 @@ function renderStoreStats() {
       <p class="stat-sub">Tickets cerrados</p>
     </div>
     <div class="stat">
-      <p class="stat-label">Ticket promedio</p>
+      <p class="stat-label">AUR</p>
       <p class="stat-value">${fmtMXN(s.avgTicket)}</p>
       <p class="stat-sub">VTAS / TC</p>
     </div>
@@ -746,6 +748,11 @@ function renderStoreStats() {
       <p class="stat-value">${fmtUpt(s.upt)}</p>
       <p class="stat-sub">${s.totalUnits.toLocaleString('en-US')} unidades / ${s.totalTx.toLocaleString('en-US')} TC</p>
     </div>
+    ${s.totalEticket > 0 ? `<div class="stat ${s.alcanceEticket >= 80 ? 'stat-green' : s.alcanceEticket >= 60 ? 'stat-amber' : 'stat-red'}">
+      <p class="stat-label">Ticket electrónico</p>
+      <p class="stat-value">${s.alcanceEticket.toFixed(1)}%</p>
+      <p class="stat-sub">${s.totalEticket} de ${s.totalTx} TC · alcance e-ticket</p>
+    </div>` : ''}
   `;
 }
 
@@ -920,10 +927,6 @@ function renderAdvisors() {
             <label>Ticket electrónico</label>
             <input type="text" data-field="eticket" data-id="${a.id}" inputmode="numeric" autocomplete="off" value="${a.eticket || ''}">
           </div>
-          <div class="input-cell">
-            <label>Meta ticket elect.</label>
-            <input type="text" data-field="eticketMeta" data-id="${a.id}" inputmode="numeric" autocomplete="off" value="${a.eticketMeta || ''}">
-          </div>
         </div>
 
         <p class="section-label" style="margin: 4px 0 6px; padding: 0 10px;">Semana anterior (comparativa)</p>
@@ -933,7 +936,7 @@ function renderAdvisors() {
             <input type="text" data-field="prevSales" data-id="${a.id}" inputmode="decimal" autocomplete="off" value="${a.prevSales || ''}">
           </div>
           <div class="input-cell">
-            <label>Ticket sem. ant.</label>
+            <label>AUR sem. ant.</label>
             <input type="text" data-field="prevTicket" data-id="${a.id}" inputmode="decimal" autocomplete="off" value="${a.prevTicket || ''}">
           </div>
           <div class="input-cell">
@@ -947,12 +950,12 @@ function renderAdvisors() {
         </div>
 
         <div class="chip-row" style="margin-top: 8px;">
-          <span class="chip chip-strong" data-display="ticket">Ticket ${fmtMXN(c.ticket)}</span>
+          <span class="chip chip-strong" data-display="ticket">AUR ${fmtMXN(c.ticket)}</span>
           <span class="chip chip-strong" data-display="upt">UPT ${fmtUpt(c.upt)}</span>
           ${c.conv !== null ? `<span class="chip chip-strong" data-display="conv">Conv. ${c.conv.toFixed(2)}%</span>` : ''}
           <span class="chip" data-display="alcance-meta">${fmtPct(c.alcanceMeta)} vs meta</span>
           <span class="chip" data-display="brecha">${c.brecha > 0 ? 'Brecha ' + fmtMXN(c.brecha) : 'Excedente +' + fmtMXN(-c.brecha)}</span>
-          ${(a.eticket > 0 || a.eticketMeta > 0) ? `<span class="chip" style="background:#E8EDF5;color:#1A2E5A;" data-display="eticket">🎫 ${a.eticket}${a.eticketMeta > 0 ? '/' + a.eticketMeta : ''} e-ticket</span>` : ''}
+          ${a.eticket > 0 ? `<span class="chip" style="background:#E8EDF5;color:#1A2E5A;" data-display="eticket">🎫 Alcance ticket ${a.tx > 0 ? (a.eticket / a.tx * 100).toFixed(1) + '%' : a.eticket + ' e-ticket'}</span>` : ''}
         </div>
       </div>
     `;
@@ -1115,7 +1118,7 @@ function updateCharts() {
   const maxTicket = Math.max(0, ...byTicket.map(a => a.ticket));
   charts.ticket.options.scales.x.max = Math.ceil(maxTicket * 1.18 / 100) * 100;
   charts.ticket.update('none');
-  document.getElementById('ticket-avg-label').textContent = 'Promedio de tienda: ' + fmtMXN(s.avgTicket);
+  document.getElementById('ticket-avg-label').textContent = 'AUR promedio de tienda: ' + fmtMXN(s.avgTicket);
 
   // UPT — orden de mayor a menor UPT
   const byUpt = [...all].sort((x, y) => y.upt - x.upt);
@@ -1689,7 +1692,7 @@ function renderBriefing() {
           <div class="briefing-name">${a.name} <span style="font-size:11px;color:#5F5E5A;font-weight:400;">${a.role}</span></div>
           <div class="briefing-kpis">
             <span class="briefing-kpi-chip ${status === 'green' ? 'kpi-ok' : status === 'amber' ? 'kpi-warn' : 'kpi-bad'}">${fmtPct(c.alcanceMin)} mín · ${fmtPct(c.alcanceMeta)} meta</span>
-            <span class="briefing-kpi-chip kpi-ok">Ticket ${fmtMXN(c.ticket)}</span>
+            <span class="briefing-kpi-chip kpi-ok">AUR ${fmtMXN(c.ticket)}</span>
             <span class="briefing-kpi-chip kpi-ok">UPT ${fmtUpt(c.upt)}</span>
             ${convIndiv ? `<span class="briefing-kpi-chip" style="background:#E8EDF5;color:#1A2E5A;">Conv. ${convIndiv}</span>` : ''}
             ${deltaTag(salesVsPrev,  fmtMXN)}
