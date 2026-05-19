@@ -973,7 +973,7 @@ function renderAdvisors() {
           ${c.conv !== null ? `<span class="chip chip-strong" data-display="conv">Conv. ${c.conv.toFixed(2)}%</span>` : ''}
           <span class="chip" data-display="alcance-meta">${fmtPct(c.alcanceMeta)} vs meta</span>
           <span class="chip" data-display="brecha">${c.brecha > 0 ? 'Brecha ' + fmtMXN(c.brecha) : 'Excedente +' + fmtMXN(-c.brecha)}</span>
-          ${a.eticket > 0 ? `<span class="chip" style="background:#E8EDF5;color:#1A2E5A;" data-display="eticket">🎫 Alcance ticket ${a.tx > 0 ? (a.eticket / a.tx * 100).toFixed(1) + '%' : a.eticket + ' e-ticket'}</span>` : ''}
+          <span class="chip" style="background:#E8EDF5;color:#1A2E5A;${a.eticket > 0 ? '' : 'display:none;'}" data-display="eticket">🎫 Alcance ticket ${a.eticket > 0 && a.tx > 0 ? (a.eticket / a.tx * 100).toFixed(1) + '%' : ''}</span>
         </div>
       </div>
     `;
@@ -1049,10 +1049,22 @@ function updateAdvisorCardComputed(id) {
   fillEl.style.background = PROGRESS_COLOR[status];
 
   card.querySelector('[data-display="sales-meta"]').textContent = `${fmtMXN(a.sales)} / ${fmtMXN(a.meta)}`;
-  card.querySelector('[data-display="ticket"]').textContent = `Ticket prom ${fmtMXN(c.ticket)}`;
+  card.querySelector('[data-display="ticket"]').textContent = `AUR ${fmtMXN(c.ticket)}`;
   card.querySelector('[data-display="upt"]').textContent = `UPT ${fmtUpt(c.upt)}`;
   card.querySelector('[data-display="alcance-meta"]').textContent = `${fmtPct(c.alcanceMeta)} vs meta`;
   card.querySelector('[data-display="brecha"]').textContent = c.brecha > 0 ? 'Brecha ' + fmtMXN(c.brecha) : 'Excedente +' + fmtMXN(-c.brecha);
+
+  // Chip alcance ticket electrónico — actualiza en tiempo real
+  const eticketEl = card.querySelector('[data-display="eticket"]');
+  if (eticketEl) {
+    if (a.eticket > 0) {
+      const pct = a.tx > 0 ? (a.eticket / a.tx * 100).toFixed(1) + '%' : a.eticket + ' e-ticket';
+      eticketEl.textContent = '🎫 Alcance ticket ' + pct;
+      eticketEl.style.display = '';
+    } else {
+      eticketEl.style.display = 'none';
+    }
+  }
 
   // Avatar / pill status update
   const avatar = card.querySelector('.avatar');
