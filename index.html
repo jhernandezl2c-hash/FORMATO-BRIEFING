@@ -201,6 +201,24 @@
     .sim-row > .sim-slider-wrap { grid-column: 1 / -1; order: 5; }
     .sim-sales, .sim-delta { font-size: 11px; }
   }
+
+  /* ── Celebraciones ── */
+  .celeb-badge {
+    position: fixed; pointer-events: none; z-index: 490;
+    background: linear-gradient(135deg, #1A2E5A 0%, #213e7a 100%);
+    color: white; border-radius: 20px; padding: 11px 20px;
+    font-size: 13px; font-weight: 600; white-space: nowrap;
+    box-shadow: 0 10px 30px rgba(26,46,90,0.5), 0 2px 8px rgba(0,0,0,0.2);
+    display: flex; align-items: center; gap: 8px; transform: translateX(-50%);
+    letter-spacing: 0.02em;
+  }
+  .store-celeb-msg {
+    position: relative; z-index: 10;
+    background: rgba(241,239,232,0.97); border-radius: 28px;
+    padding: 44px 64px; text-align: center;
+    box-shadow: 18px 18px 50px rgba(0,0,0,0.2), -6px -6px 22px rgba(255,255,255,0.75);
+    pointer-events: none; max-width: 480px; width: 90%;
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
@@ -1436,6 +1454,7 @@ const debouncedHeavyUpdate = debounce(() => {
   refreshAdvisorOrder();
   renderSimulator();
   renderBriefing();
+  checkCelebrations();
 }, 300);
 
 function onAdvisorNumberChange(id, field, value) {
@@ -1634,6 +1653,7 @@ function onReset() {
   if (!confirm('Esto eliminará todos tus cambios y restaurará los datos por defecto. ¿Continuar?')) return;
   state = normalizeDerivedFields(JSON.parse(JSON.stringify(DEFAULT_STATE)));
   simUpts = {};
+  celebrated.clear();
   renderAll();
   saveState();
   showToast('Datos restaurados');
@@ -1854,6 +1874,171 @@ function _noop_teamPanel() {
   });
 }
 
+// ===== Celebraciones =====
+const celebrated = new Set();
+const CELEB_COLORS = ['#1A2E5A','#C8102E','#639922','#EF9F27','#9b59b6','#3498db','#e74c3c','#f1c40f','#2ecc71','#e91e8c'];
+
+function _confettiParticles(cx, cy, count, opts) {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:489;pointer-events:none;';
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const spread = opts.spread || 14;
+  const up = opts.up || 10;
+  const particles = Array.from({length: count}, () => ({
+    x: cx + (Math.random() - 0.5) * 20, y: cy,
+    vx: (Math.random() - 0.5) * spread,
+    vy: -(Math.random() * up + 3),
+    color: CELEB_COLORS[Math.floor(Math.random() * CELEB_COLORS.length)],
+    size: Math.random() * 8 + 4,
+    rot: Math.random() * Math.PI * 2,
+    rotV: (Math.random() - 0.5) * 0.25,
+    alpha: 1,
+    shape: Math.random() > 0.45 ? 'rect' : 'circle'
+  }));
+  let raf;
+  const tick = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.35; p.vx *= 0.98;
+      p.rot += p.rotV; p.alpha -= 0.016;
+      if (p.alpha > 0) {
+        alive = true;
+        ctx.save(); ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0,0,p.size/2,0,Math.PI*2); ctx.fill(); }
+        else { ctx.fillRect(-p.size/2,-p.size*0.3,p.size,p.size*0.6); }
+        ctx.restore();
+      }
+    });
+    if (alive) raf = requestAnimationFrame(tick); else canvas.remove();
+  };
+  raf = requestAnimationFrame(tick);
+}
+
+function _fallingConfetti(canvas, durationFrames) {
+  const ctx = canvas.getContext('2d');
+  const particles = Array.from({length: 220}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * -canvas.height * 0.8,
+    vx: (Math.random() - 0.5) * 2.5,
+    vy: Math.random() * 3 + 1.5,
+    color: CELEB_COLORS[Math.floor(Math.random() * CELEB_COLORS.length)],
+    size: Math.random() * 10 + 5,
+    rot: Math.random() * Math.PI * 2,
+    rotV: (Math.random() - 0.5) * 0.1,
+    alpha: 1, shape: Math.random() > 0.45 ? 'rect' : 'circle', wave: Math.random() * 100
+  }));
+  let t = 0, raf;
+  const tick = () => {
+    t++;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const fadeStart = durationFrames * 0.6;
+    particles.forEach(p => {
+      p.x += p.vx + Math.sin((t + p.wave) * 0.03) * 0.6;
+      p.y += p.vy; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.y = -15; p.x = Math.random() * canvas.width; }
+      if (t > fadeStart) p.alpha = Math.max(0, 1 - (t - fadeStart) / (durationFrames - fadeStart));
+      ctx.save(); ctx.globalAlpha = p.alpha * 0.92;
+      ctx.fillStyle = p.color;
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0,0,p.size/2,0,Math.PI*2); ctx.fill(); }
+      else { ctx.fillRect(-p.size/2,-p.size*0.3,p.size,p.size*0.6); }
+      ctx.restore();
+    });
+    if (t < durationFrames) raf = requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+}
+
+function celebrateAdvisor(advisorEl, name) {
+  const rect = advisorEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + 44;
+
+  const badge = document.createElement('div');
+  badge.className = 'celeb-badge';
+  badge.style.left = cx + 'px';
+  badge.style.top = (cy - 56) + 'px';
+  badge.innerHTML = '🎉 ¡Felicidades ' + name.split(' ')[0] + '! ¡Meta alcanzada!';
+  document.body.appendChild(badge);
+
+  gsap.fromTo(badge,
+    { opacity: 0, y: 12, scale: 0.75 },
+    { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(1.8)',
+      onComplete() {
+        gsap.to(badge, { opacity: 0, y: -24, delay: 2.8, duration: 0.7, ease: 'power2.in', onComplete: () => badge.remove() });
+      }
+    }
+  );
+
+  _confettiParticles(cx, cy, 70, { spread: 16, up: 12 });
+}
+
+function celebrateStore() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;pointer-events:none;';
+
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+  const msg = document.createElement('div');
+  msg.className = 'store-celeb-msg';
+  msg.innerHTML = `
+    <div style="font-size:58px;margin-bottom:10px;line-height:1;">🏆</div>
+    <div style="font-size:23px;font-weight:700;color:#1A2E5A;margin-bottom:8px;letter-spacing:0.01em;">¡Meta de tienda alcanzada!</div>
+    <div style="font-size:15px;color:#5F5E5A;margin-bottom:4px;">¡Felicidades a todo el equipo!</div>
+    <div style="font-size:13px;color:#888780;margin-top:10px;">Toca en cualquier lugar para cerrar</div>
+  `;
+
+  overlay.appendChild(canvas);
+  overlay.appendChild(msg);
+  document.body.appendChild(overlay);
+
+  gsap.fromTo(msg, { opacity: 0, scale: 0.65, y: 40 }, { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: 'back.out(1.6)' });
+
+  const stopConfetti = _fallingConfetti(canvas, 320);
+
+  const dismiss = () => {
+    stopConfetti();
+    gsap.to(overlay, { opacity: 0, scale: 0.95, duration: 0.5, ease: 'power2.in', onComplete: () => overlay.remove() });
+  };
+  setTimeout(() => {
+    overlay.style.pointerEvents = 'auto';
+    overlay.addEventListener('click', dismiss);
+    setTimeout(dismiss, 6000);
+  }, 600);
+}
+
+function checkCelebrations() {
+  const s = calcStore();
+
+  // Tienda
+  if (s.alcanceMeta >= 100 && !celebrated.has('store')) {
+    celebrated.add('store');
+    setTimeout(celebrateStore, 350);
+  } else if (s.alcanceMeta < 100) {
+    celebrated.delete('store');
+  }
+
+  // Asesores
+  state.advisors.forEach(a => {
+    const c = calcAdvisor(a);
+    if (c.alcanceMeta >= 100 && !celebrated.has(a.id)) {
+      celebrated.add(a.id);
+      const card = document.querySelector(`[data-advisor="${a.id}"]`);
+      if (card) setTimeout(() => celebrateAdvisor(card, a.name), 250);
+    } else if (c.alcanceMeta < 100) {
+      celebrated.delete(a.id);
+    }
+  });
+}
+
 // ===== Render all =====
 function renderAll() {
   renderHeader();
@@ -1864,6 +2049,7 @@ function renderAll() {
   updateCharts();
   renderSimulator();
   renderProjection();
+  checkCelebrations();
 }
 
 // ===== Init =====
