@@ -2880,38 +2880,39 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
 ════════════════════════════════════════════════ -->
 <script>
 (function () {
-  /* ─── 0. Esperar a que GSAP + ScrollTrigger estén listos ─── */
   gsap.registerPlugin(ScrollTrigger);
 
   /* ══════════════════════════════════════════════
      LOGIN — Pantalla de acceso restringido
   ══════════════════════════════════════════════ */
-  (function initLoginAnim () {
+  (function initLoginAnim() {
     const overlay = document.getElementById('login-overlay');
-    if (!overlay) return;
-    const box     = document.getElementById('login-box');
-    const inp     = document.getElementById('login-input');
-    const btn     = document.getElementById('login-btn');
+    /* Ya autenticado — overlay oculto, no animar */
+    if (!overlay || overlay.style.display === 'none') return;
+
+    const box = document.getElementById('login-box');
+    const inp = document.getElementById('login-input');
+    const btn = document.getElementById('login-btn');
 
     /* — Canvas de partículas flotantes — */
-    const canvas  = document.createElement('canvas');
+    const canvas = document.createElement('canvas');
     canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;';
     overlay.style.position = 'relative';
     overlay.insertBefore(canvas, overlay.firstChild);
     box.style.position = 'relative';
     box.style.zIndex   = '1';
 
-    function resizeCanvas () {
-      canvas.width  = overlay.offsetWidth;
-      canvas.height = overlay.offsetHeight;
+    function resizeCanvas() {
+      canvas.width  = overlay.offsetWidth  || window.innerWidth;
+      canvas.height = overlay.offsetHeight || window.innerHeight;
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
     const ctx  = canvas.getContext('2d');
     const dots = Array.from({ length: 55 }, () => ({
-      x:  Math.random() * canvas.width,
-      y:  Math.random() * canvas.height,
+      x:  Math.random() * (canvas.width  || window.innerWidth),
+      y:  Math.random() * (canvas.height || window.innerHeight),
       r:  Math.random() * 2.2 + 0.6,
       vx: (Math.random() - 0.5) * 0.35,
       vy: (Math.random() - 0.5) * 0.35,
@@ -2919,16 +2920,14 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     }));
 
     let loginAnimId;
-    function drawParticles () {
-      if (!document.getElementById('login-overlay') ||
-          document.getElementById('login-overlay').style.display === 'none') {
-        cancelAnimationFrame(loginAnimId); return;
-      }
+    function drawParticles() {
+      const ov = document.getElementById('login-overlay');
+      if (!ov || ov.style.display === 'none') { cancelAnimationFrame(loginAnimId); return; }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       dots.forEach(d => {
         d.x += d.vx; d.y += d.vy;
         if (d.x < 0) d.x = canvas.width;
-        if (d.x > canvas.width) d.x = 0;
+        if (d.x > canvas.width)  d.x = 0;
         if (d.y < 0) d.y = canvas.height;
         if (d.y > canvas.height) d.y = 0;
         ctx.beginPath();
@@ -2936,17 +2935,16 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
         ctx.fillStyle = `rgba(26,46,90,${d.a})`;
         ctx.fill();
       });
-      /* líneas entre partículas cercanas */
       for (let i = 0; i < dots.length; i++) {
         for (let j = i + 1; j < dots.length; j++) {
-          const dx = dots[i].x - dots[j].x;
-          const dy = dots[i].y - dots[j].y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
+          const ddx = dots[i].x - dots[j].x;
+          const ddy = dots[i].y - dots[j].y;
+          const dist = Math.sqrt(ddx * ddx + ddy * ddy);
           if (dist < 110) {
             ctx.beginPath();
             ctx.moveTo(dots[i].x, dots[i].y);
             ctx.lineTo(dots[j].x, dots[j].y);
-            ctx.strokeStyle = `rgba(26,46,90,${0.06 * (1 - dist/110)})`;
+            ctx.strokeStyle = `rgba(26,46,90,${0.06 * (1 - dist / 110)})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -2956,43 +2954,96 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     }
     drawParticles();
 
-    /* — Entrada cinematográfica del login box — */
-    /* Primero establecemos el estado inicial */
-    gsap.set(box, { opacity: 0, y: 48, scale: 0.88, filter: 'blur(8px)' });
-    const boxChildren = box.querySelectorAll('h2, p.subtitle, #login-input, #login-error, #login-btn');
+    /* — Entrada del login box: y + scale + opacity (sin filter:blur) — */
+    gsap.set(box, { opacity: 0, y: 48, scale: 0.9 });
+    const boxChildren = box.querySelectorAll('h2, .subtitle, #login-input, #login-error, #login-btn');
     gsap.set(boxChildren, { opacity: 0, y: 18 });
 
-    /* Luego animamos con stagger jerarquizado */
-    const tl = gsap.timeline({ delay: 0.15 });
-    tl.to(box, {
-        opacity: 1, y: 0, scale: 1, filter: 'blur(0px)',
-        duration: 0.85, ease: 'expo.out'
-      })
-      .to(boxChildren, {
-        opacity: 1, y: 0,
-        duration: 0.5, ease: 'power3.out',
-        stagger: 0.09,
-      }, '-=0.45');
+    const tl = gsap.timeline({ delay: 0.2 });
+    tl.to(box, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'expo.out' })
+      .to(boxChildren, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out', stagger: 0.09 }, '-=0.48');
 
-    /* — Pulso sutil del botón mientras espera — */
+    /* — Pulso suave en el botón — */
     gsap.to(btn, {
-      boxShadow: '7px 7px 22px rgba(26,46,90,0.65), inset 0 1px 0 rgba(255,255,255,0.2)',
-      duration: 1.4, ease: 'sine.inOut', yoyo: true, repeat: -1,
+      boxShadow: '0 8px 28px rgba(26,46,90,0.55), inset 0 1px 0 rgba(255,255,255,0.2)',
+      duration: 1.5, ease: 'sine.inOut', yoyo: true, repeat: -1,
     });
 
-    /* — Shake en error — override del shake original — */
-    const origBorderStyle = inp.style.boxShadow;
-    const loginBtn = document.getElementById('login-btn');
-    loginBtn.addEventListener('click', function onLoginClick () {
-      /* Si el input ya está con el shadow rojo es que falló */
-      setTimeout(() => {
-        if (inp.style.boxShadow && inp.style.boxShadow.includes('C8102E')) {
-          gsap.fromTo(inp,
-            { x: -8 },
-            { x: 0, duration: 0.45, ease: 'elastic.out(1, 0.3)' }
+    /* — Shake en error vía MutationObserver: no agrega listener duplicado — */
+    const errEl = document.getElementById('login-error');
+    new MutationObserver(() => {
+      if (errEl.textContent.trim()) {
+        gsap.fromTo(inp, { x: -10 }, { x: 0, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
+      }
+    }).observe(errEl, { childList: true, characterData: true, subtree: true });
+  })();
+
+  /* ══════════════════════════════════════════════
+     COUNT-UP — Animar valores al entrar en viewport
+     Flash sutil cuando el usuario modifica datos
+  ══════════════════════════════════════════════ */
+  (function initCountUp() {
+    function parseStat(el) {
+      const t = el.textContent.trim();
+      if (!t || t === '—' || t === '-' || t === 'N/A') return null;
+      const hasDollar  = t.includes('$');
+      const hasPercent = t.includes('%');
+      const hasDecimal = !hasDollar && t.includes('.');
+      const clean = t.replace(/[$,%\s]/g, '').replace(/,/g, '');
+      const num = parseFloat(clean);
+      if (isNaN(num) || num === 0) return null;
+      return { num, hasDollar, hasPercent, hasDecimal, original: t };
+    }
+
+    function fmtVal(info, v) {
+      if (info.hasDollar)  return '$' + Math.round(v).toLocaleString('es-MX');
+      if (info.hasPercent) return v.toFixed(1) + '%';
+      if (info.hasDecimal) return v.toFixed(2);
+      return Math.round(v).toLocaleString('es-MX');
+    }
+
+    function doCountUp(el) {
+      if (el._cu) return;
+      const info = parseStat(el);
+      if (!info) return;
+      el._cu = true;
+      const proxy = { v: 0 };
+      gsap.fromTo(proxy, { v: 0 }, {
+        v: info.num,
+        duration: 1.15,
+        ease: 'power2.out',
+        onUpdate()  { el.textContent = fmtVal(info, proxy.v); },
+        onComplete(){ el.textContent = info.original; el._cu = false; },
+      });
+    }
+
+    /* Scroll-into-view: count-up al primer vistazo */
+    document.querySelectorAll('#store-stats, #store-ops, #brechas-stats').forEach(c => {
+      if (!c) return;
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(en => {
+          if (!en.isIntersecting) return;
+          io.unobserve(en.target);
+          en.target.querySelectorAll('.stat-value').forEach(doCountUp);
+        });
+      }, { threshold: 0.2 });
+      io.observe(c);
+    });
+
+    /* Flash de escala cuando el usuario modifica datos de asesor */
+    let _flashT;
+    document.addEventListener('input', e => {
+      if (!e.target.closest('.advisor-card')) return;
+      clearTimeout(_flashT);
+      _flashT = setTimeout(() => {
+        document.querySelectorAll('#store-stats .stat-value, #store-ops .stat-value').forEach(el => {
+          if (el._cu) return;
+          gsap.fromTo(el,
+            { scale: 1.12 },
+            { scale: 1, duration: 0.42, ease: 'back.out(1.6)' }
           );
-        }
-      }, 50);
+        });
+      }, 380);
     });
   })();
 
@@ -3000,97 +3051,138 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
      PÁGINA PRINCIPAL — Entrances con ScrollTrigger
   ══════════════════════════════════════════════ */
 
-  /* — Header: entra inmediatamente desde arriba — */
+  /* — Header desde arriba — */
   gsap.from('.header', {
-    opacity: 0, y: -32,
-    duration: 0.75, ease: 'expo.out', delay: 0.1,
+    opacity: 0, y: -36,
+    duration: 0.8, ease: 'expo.out', delay: 0.1,
   });
 
-  /* — Secciones surface: slide-up al hacer scroll — */
+  /* — Secciones .surface: slide-up al hacer scroll — */
   gsap.utils.toArray('.surface').forEach((el, i) => {
     gsap.from(el, {
-      scrollTrigger: {
-        trigger: el,
-        start:   'top 88%',
-        toggleActions: 'play none none none',
-      },
-      opacity: 0,
-      y:       44,
-      scale:   0.985,
-      duration: 0.7,
-      delay:    i === 0 ? 0.2 : 0,
-      ease:    'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
+      opacity: 0, y: 44, scale: 0.985,
+      duration: 0.7, delay: i === 0 ? 0.25 : 0, ease: 'power3.out',
     });
   });
 
-  /* — Stats: stagger de scale al entrar en viewport — */
-  document.querySelectorAll('#store-stats, #store-ops, #brechas-stats').forEach(container => {
-    if (!container) return;
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        observer.unobserve(entry.target);
-        const cards = entry.target.querySelectorAll('.stat');
-        gsap.from(cards, {
-          opacity: 0, scale: 0.82, y: 20,
-          duration: 0.5, ease: 'back.out(1.6)',
-          stagger: 0.07,
+  /* — Stat cards: stagger de scale al entrar en viewport — */
+  document.querySelectorAll('#store-stats, #store-ops, #brechas-stats').forEach(c => {
+    if (!c) return;
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        gsap.from(en.target.querySelectorAll('.stat'), {
+          opacity: 0, scale: 0.82, y: 22,
+          duration: 0.52, ease: 'back.out(1.6)', stagger: 0.07,
         });
       });
     }, { threshold: 0.15 });
-    observer.observe(container);
+    io.observe(c);
   });
 
-  /* — Gráficas: fade-in al llegar — */
+  /* — Gráficas: slide desde la izquierda — */
   gsap.utils.toArray('.chart-wrap').forEach(el => {
     gsap.from(el, {
       scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
-      opacity: 0, x: -28,
+      opacity: 0, x: -30,
       duration: 0.65, ease: 'power2.out',
     });
   });
 
-  /* — Advisor cards: stagger desde la izquierda — */
-  function animateAdvisorCards () {
+  /* — Advisor cards: stagger al renderizar — */
+  function animateAdvisorCards() {
     const cards = document.querySelectorAll('.advisor-card:not([data-anim-done])');
     if (!cards.length) return;
     cards.forEach(c => c.setAttribute('data-anim-done', '1'));
     gsap.from(cards, {
       scrollTrigger: { trigger: '#advisor-list', start: 'top 80%', toggleActions: 'play none none none' },
-      opacity: 0, x: -36,
-      duration: 0.55, ease: 'power3.out',
-      stagger: 0.08,
+      opacity: 0, x: -38,
+      duration: 0.55, ease: 'power3.out', stagger: 0.08,
     });
   }
-  /* Lanzar cuando los advisors ya están en el DOM */
   setTimeout(animateAdvisorCards, 400);
 
-  /* — Hover lift en stats — */
-  document.addEventListener('mouseover', function (e) {
-    const stat = e.target.closest('.stat');
-    if (stat && !stat._gsapHover) {
-      stat._gsapHover = true;
-      gsap.to(stat, { y: -4, scale: 1.025, duration: 0.25, ease: 'power2.out',
-        boxShadow: '8px 8px 18px rgba(0,0,0,0.13), -4px -4px 10px rgba(255,255,255,0.95)' });
-      stat.addEventListener('mouseleave', function off () {
-        gsap.to(stat, { y: 0, scale: 1, duration: 0.3, ease: 'power2.inOut',
-          boxShadow: '5px 5px 12px rgba(0,0,0,0.09), -3px -3px 7px rgba(255,255,255,0.92)' });
-        stat._gsapHover = false;
-        stat.removeEventListener('mouseleave', off);
-      }, { once: true });
-    }
+  /* ══════════════════════════════════════════════
+     EFECTOS HOVER — Estilo Apple
+  ══════════════════════════════════════════════ */
+
+  /* — 3D perspective tilt en advisor cards — */
+  document.addEventListener('mousemove', function (e) {
+    const card = e.target.closest && e.target.closest('.advisor-card');
+    if (!card) return;
+    const r  = card.getBoundingClientRect();
+    const rx = ((e.clientY - (r.top  + r.height / 2)) / (r.height / 2)) *  5;
+    const ry = ((e.clientX - (r.left + r.width  / 2)) / (r.width  / 2)) * -5;
+    gsap.to(card, { rotationX: rx, rotationY: ry, transformPerspective: 900, duration: 0.3, ease: 'power2.out' });
+  });
+  document.addEventListener('mouseout', function (e) {
+    const card = e.target.closest && e.target.closest('.advisor-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    gsap.to(card, { rotationX: 0, rotationY: 0, duration: 0.55, ease: 'power3.out' });
   });
 
-  /* — Hover lift en surface cards — */
+  /* — Hover lift en .stat cards — */
+  document.addEventListener('mouseover', function (e) {
+    const s = e.target.closest('.stat');
+    if (!s || s._gh) return;
+    s._gh = true;
+    gsap.to(s, {
+      y: -5, scale: 1.028, duration: 0.25, ease: 'power2.out',
+      boxShadow: '8px 8px 20px rgba(0,0,0,0.13), -4px -4px 12px rgba(255,255,255,0.95)',
+    });
+    s.addEventListener('mouseleave', function off() {
+      gsap.to(s, {
+        y: 0, scale: 1, duration: 0.3, ease: 'power2.inOut',
+        boxShadow: '5px 5px 12px rgba(0,0,0,0.09), -3px -3px 7px rgba(255,255,255,0.92)',
+      });
+      s._gh = false; s.removeEventListener('mouseleave', off);
+    }, { once: true });
+  });
+
+  /* — Hover lift en secciones .surface — */
   document.querySelectorAll('.surface').forEach(el => {
     el.addEventListener('mouseenter', () =>
-      gsap.to(el, { y: -3, duration: 0.3, ease: 'power2.out',
-        boxShadow: '12px 12px 30px rgba(0,0,0,0.12), -6px -6px 18px rgba(255,255,255,0.85)' })
+      gsap.to(el, {
+        y: -3, duration: 0.3, ease: 'power2.out',
+        boxShadow: '12px 12px 32px rgba(0,0,0,0.12), -6px -6px 18px rgba(255,255,255,0.85)',
+      })
     );
     el.addEventListener('mouseleave', () =>
-      gsap.to(el, { y: 0, duration: 0.35, ease: 'power2.inOut',
-        boxShadow: '9px 9px 24px rgba(0,0,0,0.09), -5px -5px 14px rgba(255,255,255,0.78)' })
+      gsap.to(el, {
+        y: 0, duration: 0.35, ease: 'power2.inOut',
+        boxShadow: '9px 9px 24px rgba(0,0,0,0.09), -5px -5px 14px rgba(255,255,255,0.78)',
+      })
     );
+  });
+
+  /* — Magnetic hover en botones .btn-primary — */
+  document.querySelectorAll('.btn-primary').forEach(b => {
+    b.addEventListener('mousemove', function (e) {
+      const r  = b.getBoundingClientRect();
+      const dx = (e.clientX - (r.left + r.width  / 2)) * 0.32;
+      const dy = (e.clientY - (r.top  + r.height / 2)) * 0.32;
+      gsap.to(b, { x: dx, y: dy, duration: 0.3, ease: 'power2.out' });
+    });
+    b.addEventListener('mouseleave', () =>
+      gsap.to(b, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' })
+    );
+  });
+
+  /* — Press effect en todos los botones — */
+  let _pressedBtn = null;
+  document.addEventListener('mousedown', function (e) {
+    const b = e.target.closest('.btn');
+    if (!b) return;
+    _pressedBtn = b;
+    gsap.to(b, { scale: 0.93, duration: 0.12, ease: 'power2.out' });
+  });
+  document.addEventListener('mouseup', function () {
+    if (_pressedBtn) {
+      gsap.to(_pressedBtn, { scale: 1, duration: 0.35, ease: 'elastic.out(1, 0.4)' });
+      _pressedBtn = null;
+    }
   });
 
   /* — Footer fade in — */
