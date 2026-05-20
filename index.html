@@ -145,20 +145,17 @@
   .legend-item { display: flex; align-items: center; gap: 6px; }
   .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
 
-  .sim-row { display: grid; grid-template-columns: 100px 1fr 50px 100px 90px; gap: 10px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); box-shadow: none; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
-  .sim-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .sim-row input[type=range] { width: 100%; accent-color: #1A2E5A; }
-  .sim-val { font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
-  .sim-sales { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; }
-  .sim-delta { text-align: right; font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .day-inputs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 16px; }
+  .day-cell { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .day-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .day-cell input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 7px 6px; font-size: 13px; font-family: inherit; text-align: center; background: var(--bg); color: var(--text); font-variant-numeric: tabular-nums; }
+  .day-cell input:focus { outline: none; border-color: #1A2E5A; background: var(--surface); }
+  .day-chart-wrap { position: relative; height: 160px; margin-bottom: 14px; }
 
-  .sim-totals { background: var(--surface); border: 1px solid var(--border); box-shadow: none; border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
-  .sim-totals-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; font-size: 13px; }
-  .sim-totals-row + .sim-totals-row { border-top: 0.5px solid rgba(0,0,0,0.08); }
-  .sim-totals-label { color: var(--muted); }
-  .sim-totals-value { font-weight: 500; font-variant-numeric: tabular-nums; }
-
-  .sim-status { border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.5; margin-top: 12px; }
+  .day-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
+  .day-stat { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .day-stat-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+  .day-stat-value { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
   .footer { font-size: 11px; color: var(--muted); text-align: center; padding: 1rem 0; }
 
@@ -228,9 +225,8 @@
     .surface { padding: 14px; }
     .toolbar { width: 100%; }
     .toolbar .btn { flex: 1; }
-    .sim-row { grid-template-columns: 1fr 60px; gap: 6px 10px; }
-    .sim-row > .sim-slider-wrap { grid-column: 1 / -1; order: 5; }
-    .sim-sales, .sim-delta { font-size: 11px; }
+    .day-inputs { grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .day-cell input { font-size: 12px; padding: 6px 4px; }
   }
 
   @media (max-width: 480px) {
@@ -506,17 +502,16 @@
   </div>
 
   <div class="surface">
-    <h2 style="margin-bottom: 4px;">Simulador UPT</h2>
-    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">Mueve el UPT de cualquier asesor para ver el impacto. Asume mismas TC actuales.</p>
+    <h2 style="margin-bottom: 4px;">Ritmo de ventas por día</h2>
+    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">Registra las ventas de cada día para identificar patrones y picos del equipo.</p>
 
-    <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
-      <button class="btn" id="btn-sim-reset" style="font-size: 11px; padding: 5px 10px;">↺ Restaurar UPT actuales</button>
+    <div class="day-inputs" id="day-inputs"></div>
+
+    <div class="day-chart-wrap">
+      <canvas id="chart-day"></canvas>
     </div>
 
-    <div id="sim-list"></div>
-
-    <div class="sim-totals" id="sim-totals"></div>
-    <div class="sim-status" id="sim-status"></div>
+    <div class="day-summary" id="day-summary"></div>
   </div>
 
   <p class="footer">Datos guardados en este navegador · <span id="last-saved"></span> · <span id="pbi-sync-status" style="font-weight:500;"></span></p>
@@ -603,6 +598,7 @@ const DEFAULT_STATE = {
   trafficProjected: 0,
   projConvTarget: null,
   projTicketTarget: null,
+  daySales: [0, 0, 0, 0, 0, 0, 0],
   advisors: [
     { id: 'a1', name: 'Asesor 1', role: 'Gerente',    meta: 20000, min: 0, sales: 0, tx: 0, units: 0, traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0, eticket: 0, eticketMeta: 0, prevEticket: 0 },
     { id: 'a2', name: 'Asesor 2', role: 'Subgerente', meta: 35000, min: 0, sales: 0, tx: 0, units: 0, traffic: 0, note: '', prevSales: 0, prevTicket: 0, prevUpt: 0, eticket: 0, eticketMeta: 0, prevEticket: 0 },
@@ -611,8 +607,7 @@ const DEFAULT_STATE = {
 };
 
 let state = null;
-let simUpts = {};
-let charts = { ticket: null, upt: null, alcance: null };
+let charts = { ticket: null, upt: null, alcance: null, day: null };
 
 // ===== Persistence =====
 function normalizeDerivedFields(s) {
@@ -677,7 +672,6 @@ async function autoLoadPBI() {
       }, prev || {}, a, { min: computeMin(a.meta || (prev && prev.meta) || 0) });
     });
     state = normalizeDerivedFields(state);
-    simUpts = {};
     renderAll();
     saveState();
     const hora = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
@@ -1382,112 +1376,100 @@ function renderProjection() {
   status.textContent = p.convRequiredText;
 }
 
-// ===== Simulator =====
-function renderSimulator() {
-  const list = document.getElementById('sim-list');
-  list.innerHTML = '';
+// ===== Ritmo de ventas por día =====
+const DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-  state.advisors.forEach(a => {
-    const c = calcAdvisor(a);
-    const initialUpt = simUpts[a.id] !== undefined ? simUpts[a.id] : c.upt;
-    const minUpt = Math.max(1.0, c.upt - 0.5);
-    const maxUpt = Math.max(2.5, c.upt + 0.5);
+function renderDayChart() {
+  if (!state.daySales) state.daySales = [0, 0, 0, 0, 0, 0, 0];
+  const data = state.daySales;
 
-    const row = document.createElement('div');
-    row.className = 'sim-row';
-    row.dataset.simAdvisor = a.id;
-    row.innerHTML = `
-      <span class="sim-name">${shortName(a.name)}</span>
-      <input type="range" min="${minUpt.toFixed(2)}" max="${maxUpt.toFixed(2)}" step="0.01" value="${initialUpt.toFixed(2)}" data-sim-upt="${a.id}">
-      <span class="sim-val" data-sim-display="upt">${fmtUpt(initialUpt)}</span>
-      <span class="sim-sales" data-sim-display="sales">${fmtMXN(a.sales || 0)}</span>
-      <span class="sim-delta" data-sim-display="delta">+$0</span>
-    `;
-    list.appendChild(row);
-  });
+  // Inputs
+  const container = document.getElementById('day-inputs');
+  if (!container.children.length) {
+    container.innerHTML = DAY_LABELS.map((d, i) => `
+      <div class="day-cell">
+        <span class="day-label">${d}</span>
+        <input type="text" inputmode="decimal" autocomplete="off" data-day="${i}" value="${data[i] || ''}">
+      </div>
+    `).join('');
+    container.querySelectorAll('input[data-day]').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const idx = parseInt(inp.dataset.day);
+        const raw = e.target.value.replace(/[$ ,]/g, '');
+        state.daySales[idx] = parseFloat(raw) || 0;
+        updateDayChart();
+        saveState();
+      });
+    });
+  } else {
+    container.querySelectorAll('input[data-day]').forEach(inp => {
+      if (document.activeElement !== inp)
+        inp.value = data[parseInt(inp.dataset.day)] || '';
+    });
+  }
 
-  list.querySelectorAll('input[data-sim-upt]').forEach(input => {
-    input.addEventListener('input', e => onSimulatorChange(input.dataset.simUpt, parseFloat(e.target.value)));
-  });
-
-  updateSimulatorAll();
+  updateDayChart();
 }
 
-function updateSimulatorAll() {
-  let projTotal = 0;
-  state.advisors.forEach(a => {
-    const c = calcAdvisor(a);
-    const simUpt = simUpts[a.id] !== undefined ? simUpts[a.id] : c.upt;
-    const projSales = a.tx * simUpt * c.ppu;
-    projTotal += projSales;
+function updateDayChart() {
+  if (!state.daySales) return;
+  const data = state.daySales;
+  const total = data.reduce((s, v) => s + v, 0);
+  const filled = data.filter(v => v > 0);
+  const avg = filled.length ? total / filled.length : 0;
+  const maxVal = Math.max(0, ...data);
+  const minNonZero = filled.length ? Math.min(...filled) : 0;
+  const bestIdx = data.indexOf(maxVal);
+  const worstIdx = filled.length ? data.indexOf(minNonZero) : -1;
 
-    const row = document.querySelector(`[data-sim-advisor="${a.id}"]`);
-    if (!row) return;
-    row.querySelector('[data-sim-display="upt"]').textContent = fmtUpt(simUpt);
-
-    const salesEl = row.querySelector('[data-sim-display="sales"]');
-    const deltaEl = row.querySelector('[data-sim-display="delta"]');
-    salesEl.textContent = fmtMXN(projSales);
-    const delta = projSales - a.sales;
-    deltaEl.textContent = (delta >= 0 ? '+' : '') + fmtMXN(delta);
-    deltaEl.style.color = delta > 50 ? '#173404' : delta < -50 ? '#791F1F' : '#5F5E5A';
+  // Bar colors
+  const colors = data.map((v, i) => {
+    if (v === 0) return 'rgba(0,0,0,0.08)';
+    if (i === bestIdx && v > 0) return '#1A2E5A';
+    return '#8FA4C8';
   });
 
-  // Totals
-  const currentTotal = state.advisors.reduce((s, a) => s + a.sales, 0);
-  const deltaTotal = projTotal - currentTotal;
-  const alcMin = state.storeMin > 0 ? projTotal / state.storeMin * 100 : 0;
-  const alcMeta = state.storeMeta > 0 ? projTotal / state.storeMeta * 100 : 0;
-  const brecha = state.storeMeta - projTotal;
+  if (!charts.day) {
+    const ctx = document.getElementById('chart-day');
+    charts.day = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: DAY_LABELS,
+        datasets: [{ data: [...data], backgroundColor: colors, borderRadius: 5, borderSkipped: false }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmtMXN(c.parsed.y) } } },
+        scales: {
+          x: { ticks: { color: 'rgba(0,0,0,0.55)', font: { size: 12 } }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { color: 'rgba(0,0,0,0.45)', callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v) }, grid: { color: 'rgba(0,0,0,0.07)' } }
+        },
+        animation: { duration: 200 }
+      }
+    });
+  } else {
+    charts.day.data.datasets[0].data = [...data];
+    charts.day.data.datasets[0].backgroundColor = colors;
+    charts.day.options.scales.y.max = maxVal > 0 ? Math.ceil(maxVal * 1.2 / 1000) * 1000 : undefined;
+    charts.day.update('none');
+  }
 
-  const totals = document.getElementById('sim-totals');
-  totals.innerHTML = `
-    <div class="sim-totals-row">
-      <span class="sim-totals-label">Tienda proyectada</span>
-      <span class="sim-totals-value">${fmtMXN(projTotal)} <span style="color: ${deltaTotal > 50 ? '#173404' : deltaTotal < -50 ? '#791F1F' : '#5F5E5A'}; font-size: 12px;">(${deltaTotal >= 0 ? '+' : ''}${fmtMXN(deltaTotal)})</span></span>
+  // Summary cards
+  const summary = document.getElementById('day-summary');
+  summary.innerHTML = `
+    <div class="day-stat">
+      <div class="day-stat-label">Total semana</div>
+      <div class="day-stat-value">${fmtMXN(total)}</div>
     </div>
-    <div class="sim-totals-row">
-      <span class="sim-totals-label">Alcance vs mínimo</span>
-      <span class="sim-totals-value" style="color: ${alcMin >= 100 ? '#173404' : '#791F1F'};">${fmtPct(alcMin)}</span>
+    <div class="day-stat">
+      <div class="day-stat-label">Mejor día</div>
+      <div class="day-stat-value" style="color:#1A2E5A;">${bestIdx >= 0 && maxVal > 0 ? DAY_LABELS[bestIdx] + ' · ' + fmtMXN(maxVal) : '—'}</div>
     </div>
-    <div class="sim-totals-row">
-      <span class="sim-totals-label">Alcance vs meta</span>
-      <span class="sim-totals-value" style="color: ${alcMeta >= 100 ? '#173404' : alcMeta >= 90 ? '#854F0B' : '#791F1F'};">${fmtPct(alcMeta)}</span>
-    </div>
-    <div class="sim-totals-row">
-      <span class="sim-totals-label">${brecha > 0 ? 'Brecha vs meta' : 'Excedente vs meta'}</span>
-      <span class="sim-totals-value" style="color: ${brecha > 0 ? '#791F1F' : '#173404'};">${brecha > 0 ? '-' : '+'}${fmtMXN(Math.abs(brecha))}</span>
+    <div class="day-stat">
+      <div class="day-stat-label">Promedio diario</div>
+      <div class="day-stat-value">${avg > 0 ? fmtMXN(Math.round(avg)) : '—'}</div>
     </div>
   `;
-
-  // Status message
-  const status = document.getElementById('sim-status');
-  const currentAlcMin = state.storeMin > 0 ? currentTotal / state.storeMin * 100 : 0;
-  if (Math.abs(deltaTotal) < 100) {
-    status.style.background = '#F1EFE8';
-    status.style.color = '#5F5E5A';
-    status.textContent = 'Sin cambios respecto al estado actual.';
-  } else if (alcMin >= 100 && alcMeta >= 100) {
-    status.style.background = '#EAF3DE';
-    status.style.color = '#173404';
-    status.textContent = 'Escenario óptimo: tienda supera meta y mínimo. Comisiones grupales en tramo medio o alto.';
-  } else if (alcMin >= 100 && currentAlcMin < 100) {
-    status.style.background = '#EAF3DE';
-    status.style.color = '#173404';
-    status.textContent = 'La tienda cruza el mínimo y escala al tramo medio de comisión grupal.';
-  } else if (alcMin >= 100) {
-    status.style.background = '#FAEEDA';
-    status.style.color = '#412402';
-    status.textContent = 'Tienda mantiene tramo medio. Aún por debajo de la meta total.';
-  } else if (deltaTotal > 0) {
-    status.style.background = '#FAEEDA';
-    status.style.color = '#412402';
-    status.textContent = 'Avance parcial. Aún no se alcanza el mínimo de tienda.';
-  } else {
-    status.style.background = '#FCEBEB';
-    status.style.color = '#501313';
-    status.textContent = 'Escenario desfavorable: ventas proyectadas por debajo del estado actual.';
-  }
 }
 
 // ===== Event handlers =====
@@ -1510,7 +1492,7 @@ const debouncedHeavyUpdate = debounce(() => {
   updateCharts();
   renderProjection();
   refreshAdvisorOrder();
-  renderSimulator();
+  renderDayChart();
   renderBriefing();
   if (_celebCheckPending) { checkCelebrations(); _celebCheckPending = false; }
 }, 300);
@@ -1526,9 +1508,6 @@ function onAdvisorNumberChange(id, field, value) {
     state.storeMeta = sumMetas(state.advisors);
     state.storeMin = computeMin(state.storeMeta);
   }
-
-  // Reset sim slider for this advisor if their TC/units changed
-  if (field === 'tx' || field === 'units') delete simUpts[id];
 
   // Lightweight: update only spans inside the same card (textContent). Never touches inputs.
   updateAdvisorCardComputed(id);
@@ -1549,7 +1528,7 @@ function onAdvisorTextChange(id, field, value) {
   a[field] = value || (field === 'name' ? 'Sin nombre' : '');
   updateAdvisorCardComputed(id);
   updateCharts();
-  renderSimulator();
+  renderDayChart();
   saveState();
 }
 
@@ -1558,7 +1537,6 @@ function onDeleteAdvisor(id) {
   if (!a) return;
   if (!confirm(`¿Eliminar a ${a.name}?`)) return;
   state.advisors = state.advisors.filter(x => x.id !== id);
-  delete simUpts[id];
   // Recompute store totals
   state.storeMeta = sumMetas(state.advisors);
   state.storeMin = computeMin(state.storeMeta);
@@ -1568,7 +1546,7 @@ function onDeleteAdvisor(id) {
   renderStoreStats();
   renderBrechas();
   updateCharts();
-  renderSimulator();
+  renderDayChart();
   renderProjection();
   saveState();
   showToast('Asesor eliminado');
@@ -1591,7 +1569,7 @@ function onAddAdvisor() {
   renderStoreStats();
   renderBrechas();
   updateCharts();
-  renderSimulator();
+  renderDayChart();
   renderProjection();
   saveState();
   // Scroll to new card and focus name
@@ -1608,11 +1586,6 @@ function onAddAdvisor() {
   }, 100);
 }
 
-function onSimulatorChange(id, value) {
-  simUpts[id] = value;
-  updateSimulatorAll();
-}
-
 function onStoreFieldChange(field, value) {
   if (field === 'storeMeta' || field === 'storeMin') {
     state[field] = parseFloat(value) || 0;
@@ -1621,15 +1594,8 @@ function onStoreFieldChange(field, value) {
   }
   renderStoreStats();
   renderBrechas();
-  updateSimulatorAll();
   renderProjection();
   saveState();
-}
-
-function onResetSim() {
-  simUpts = {};
-  renderSimulator();
-  showToast('UPT restaurados');
 }
 
 // ===== Projection event handlers =====
@@ -1697,7 +1663,9 @@ function onImport() {
         const data = JSON.parse(ev.target.result);
         if (!data || !Array.isArray(data.advisors)) throw new Error('Formato inválido');
         state = normalizeDerivedFields(data);
-        simUpts = {};
+        if (!state.daySales) state.daySales = [0,0,0,0,0,0,0];
+        charts.day = null;
+        document.getElementById('day-inputs').innerHTML = '';
         renderAll();
         saveState();
         showToast('Datos cargados');
@@ -1713,7 +1681,8 @@ function onImport() {
 function onReset() {
   if (!confirm('Esto eliminará todos tus cambios y restaurará los datos por defecto. ¿Continuar?')) return;
   state = normalizeDerivedFields(JSON.parse(JSON.stringify(DEFAULT_STATE)));
-  simUpts = {};
+  charts.day = null;
+  document.getElementById('day-inputs').innerHTML = '';
   celebrated.clear();
   _celebCheckPending = false;
   renderAll();
@@ -2114,8 +2083,8 @@ function renderAll() {
   renderAdvisors();
   renderBriefing();
   updateCharts();
-  renderSimulator();
   renderProjection();
+  renderDayChart();
   checkCelebrations();
 }
 
@@ -2128,8 +2097,8 @@ renderAdvisors();
 renderBriefing();
 initCharts();
 updateCharts();
-renderSimulator();
 renderProjection();
+renderDayChart();
 document.getElementById('last-saved').textContent = 'Cargado: ' + new Date().toLocaleTimeString('es-MX');
 autoLoadPBI(); // Jala datos de Power BI automáticamente si está configurado
 
@@ -2140,7 +2109,6 @@ document.querySelectorAll('[data-store]').forEach(el => {
   el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
 });
 document.getElementById('btn-add-advisor').addEventListener('click', onAddAdvisor);
-document.getElementById('btn-sim-reset').addEventListener('click', onResetSim);
 document.getElementById('btn-export').addEventListener('click', onExport);
 document.getElementById('btn-import').addEventListener('click', onImport);
 document.getElementById('btn-reset').addEventListener('click', onReset);
@@ -2427,7 +2395,6 @@ document.getElementById('btn-pbi').addEventListener('click', openPBIModal);
 
     state.advisors = allAdvisors;
     state = normalizeDerivedFields(state);
-    simUpts = {};
     renderAll();
     saveState();
     closePBIModal();
