@@ -2286,9 +2286,15 @@ document.getElementById('btn-pbi').addEventListener('click', openPBIModal);
 
   function toNum(val) {
     if (!val) return 0;
-    // Remove currency symbols, spaces, thousands separators
-    const clean = String(val).replace(/[$ ,]/g, '').replace(/,/g, '').trim();
-    const n = parseFloat(clean.replace(',', '.'));
+    let s = String(val).trim().replace(/[$€\s]/g, '');
+    // Formato MX/EU: punto como miles, coma como decimal (ej: 25.708,50 o 1.234.567)
+    if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) {
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else {
+      // Formato US: coma como miles, punto como decimal (ej: 1,234.56)
+      s = s.replace(/,/g, '');
+    }
+    const n = parseFloat(s);
     return isNaN(n) ? 0 : Math.round(n * 100) / 100;
   }
 
@@ -2442,13 +2448,24 @@ document.getElementById('btn-pbi').addEventListener('click', openPBIModal);
       if (!nameMatch) return;
       var name = nameMatch[1].trim();
       if (name.length < 2) return;
-      // Extraer números en orden, manejando formato MX (25.708 = 25708)
+      // Extraer números en orden, manejando formato MX (25.708 = 25708, 25.708,50 = 25708.50)
       var rest = clean.substring(nameMatch[0].length);
+      // Eliminar valores de porcentaje (ej: 85.2%, % conv) para no desplazar posiciones de columna
+      var dataRest = rest.replace(/\d[\d.,]*\s*%/g, '').replace(/%\s*\d[\d.,]*/g, '');
       var numbers = [];
-      var re = /\$?\s*(\d[\d.]*)\s*%?/g;
+      // Regex: captura números con separadores MX/EU/US, sin consumir el % que podría quedar
+      var re = /\$\s*(\d[\d.,]*)|(\d[\d.,]*)/g;
       var m;
-      while ((m = re.exec(rest)) !== null) {
-        var raw = m[1].replace(/\.(\d{3})(?!\d)/g, '$1'); // separador miles MX
+      while ((m = re.exec(dataRest)) !== null) {
+        var raw = m[1] || m[2];
+        // Quitar comas/puntos sueltos al final
+        raw = raw.replace(/[,.]$/, '');
+        if (!raw) continue;
+        if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(raw)) {
+          raw = raw.replace(/\./g, '').replace(',', '.'); // MX/EU: 25.708,50 → 25708.50
+        } else {
+          raw = raw.replace(/,/g, ''); // US: 1,234 → 1234
+        }
         var n = parseFloat(raw);
         if (!isNaN(n)) numbers.push(n);
       }
