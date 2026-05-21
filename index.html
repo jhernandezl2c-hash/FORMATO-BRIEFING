@@ -539,9 +539,10 @@
 </div>
 <script>
 (function(){
-  var KEY      = 'thsa_auth';
-  var STOREKEY = 'thsa_store';
-  var WORKER   = 'https://thsa-excel-proxy.jhernandezl2c.workers.dev';
+  var KEY        = 'thsa_auth';
+  var STOREKEY   = 'thsa_store';
+  var SAVEDSTORE = 'thsa_store_saved';
+  var WORKER     = 'https://thsa-excel-proxy.jhernandezl2c.workers.dev';
 
   // Si ya inició sesión en esta pestaña, no mostrar el login
   if (sessionStorage.getItem(KEY) === '1') {
@@ -552,6 +553,16 @@
   var storeInp = document.getElementById('login-store');
   var passInp  = document.getElementById('login-input');
   var errEl    = document.getElementById('login-error');
+
+  // Recordar el nombre de la tienda en este dispositivo: si ya está guardado,
+  // se rellena solo y el login solo pide la contraseña.
+  var savedStore = localStorage.getItem(SAVEDSTORE) || '';
+  if (savedStore) {
+    storeInp.value = savedStore;
+    setTimeout(function(){ passInp.focus(); }, 500);
+  } else {
+    setTimeout(function(){ storeInp.focus(); }, 500);
+  }
 
   function showError(msg){
     errEl.textContent = msg;
@@ -590,6 +601,7 @@
       if (data && data.ok) {
         sessionStorage.setItem(KEY, '1');
         sessionStorage.setItem(STOREKEY, store);
+        localStorage.setItem(SAVEDSTORE, store);
         showWelcome(store);
       } else {
         btn.disabled = false; btn.textContent = 'Entrar';
