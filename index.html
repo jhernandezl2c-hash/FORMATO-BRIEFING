@@ -460,6 +460,13 @@
   .pbi-status { font-size: 12px; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; }
   .pbi-status.ok { background: var(--c-green-bg); color: var(--c-green-fg); }
   .pbi-status.err { background: var(--c-red-bg);   color: var(--c-red-deep); }
+
+  /* ── Modal Excel RDV ── */
+  .xlsx-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .xlsx-divider::before, .xlsx-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .xlsx-field-label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin: 10px 0 4px; }
+  .xlsx-input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); font: inherit; font-size: 12px; background: var(--bg); box-sizing: border-box; box-shadow: none; }
+  .xlsx-input:focus { border-color: var(--accent); outline: none; }
 </style>
 </head>
 <body>
@@ -521,6 +528,29 @@
   </div>
   <input type="file" id="xlsx-file-input" accept=".xlsx,.xls,.xlsm" style="display:none">
   <div class="week-bar" id="xlsx-week-bar"></div>
+
+  <!-- ── Modal Excel RDV: archivo o link de SharePoint ── -->
+  <div class="pbi-overlay hidden" id="xlsx-overlay">
+    <div class="pbi-modal" style="max-width:480px;">
+      <button class="pbi-close" id="xlsx-modal-close" title="Cerrar">✕</button>
+      <h3>Cargar Excel RDV</h3>
+      <p>Sube el archivo manualmente o cárgalo desde un link de SharePoint.</p>
+
+      <div class="pbi-drop" id="xlsx-drop">📂 Haz clic o arrastra el archivo .xlsx aquí</div>
+
+      <div class="xlsx-divider"><span>o</span></div>
+
+      <p class="pbi-mapper-title">Cargar desde SharePoint</p>
+      <label class="xlsx-field-label">Link del Excel en SharePoint (se guarda)</label>
+      <input type="text" id="xlsx-sp-url" class="xlsx-input" placeholder="https://...sharepoint.com/..." autocomplete="off" spellcheck="false">
+      <button class="btn btn-primary" id="xlsx-load-link" style="width:100%; margin-top:12px; font-size:12px;">⬇ Cargar desde link</button>
+      <div id="xlsx-link-status" class="pbi-status" style="display:none; margin-top:10px;"></div>
+
+      <div class="pbi-steps" style="margin-top:14px;">
+        Pega el link "Compartir → cualquier persona con el vínculo" del Excel en SharePoint. El link queda guardado en este navegador.
+      </div>
+    </div>
+  </div>
 
   <div class="surface">
     <h2 style="margin-bottom: 4px;">Resultado de tienda</h2>
@@ -2715,6 +2745,9 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
   var _wb = null;  // workbook en memoria
   var _xlsxState = { weeks: [], selectedWeek: null, commissions: [] };
 
+  // URL del Worker de Cloudflare (proxy CORS para descargar el Excel de SharePoint)
+  var XLSX_WORKER_URL = 'https://thsa-excel-proxy.jhernandezl2c.workers.dev';
+
   // ─── Parsers ────────────────────────────────────────────────────────────────
 
   function parseKPIsGenerales(wb, selectedWeek) {
@@ -3143,38 +3176,89 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     reader.readAsArrayBuffer(file);
   }
 
-  // Carga desde URL de SharePoint (Anyone link)
-  async function loadFromURL(url) {
+  // ─── Modal Excel RDV: archivo o link ─────────────────────────────────────────
+
+  var LS_SPURL = 'xlsx_sp_url';
+
+  function showLinkStatus(msg, type) {
+    var el = document.getElementById('xlsx-link-status');
+    if (!el) return;
+    el.style.display = 'block';
+    el.className = 'pbi-status ' + (type || 'ok');
+    el.textContent = msg;
+  }
+
+  function openXlsxModal() {
+    var ov = document.getElementById('xlsx-overlay');
+    if (!ov) return;
+    document.getElementById('xlsx-sp-url').value = localStorage.getItem(LS_SPURL) || '';
+    var st = document.getElementById('xlsx-link-status');
+    if (st) st.style.display = 'none';
+    ov.classList.remove('hidden');
+  }
+
+  function closeXlsxModal() {
+    var ov = document.getElementById('xlsx-overlay');
+    if (ov) ov.classList.add('hidden');
+  }
+
+  // Carga desde URL de SharePoint a través del proxy (Cloudflare Worker)
+  async function loadFromURL(url, workerUrl) {
     if (!url) return;
-    if (typeof XLSX === 'undefined') { showToast('Librería no lista, espera un momento.'); return; }
-    var dlUrl = (url.includes('sharepoint.com') || url.includes('1drv.ms'))
-      ? (url.includes('?') ? url + '&download=1' : url + '?download=1')
+    if (typeof XLSX === 'undefined') { showLinkStatus('Librería no lista, espera un momento.', 'err'); return; }
+    var fetchUrl = workerUrl
+      ? workerUrl.replace(/\/+$/, '') + '/?url=' + encodeURIComponent(url)
       : url;
-    showToast('Descargando desde SharePoint…');
+    showLinkStatus('Descargando…', 'ok');
     try {
-      var res = await fetch(dlUrl);
+      var res = await fetch(fetchUrl);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       var buf = await res.arrayBuffer();
       var wb = XLSX.read(buf, { type: 'array' });
       _wb = wb;
-      applyExcel(wb, _xlsxState.selectedWeek);
-      showToast('Excel de SharePoint cargado ✓');
+      applyExcel(wb, null);
+      var wkCount = _xlsxState.weeks.length;
+      showLinkStatus('✓ Excel cargado — ' + wkCount + ' semana' + (wkCount !== 1 ? 's' : '') + ' detectada' + (wkCount !== 1 ? 's' : ''), 'ok');
+      setTimeout(closeXlsxModal, 1000);
     } catch (err) {
-      showToast('CORS bloqueado — arrastra el archivo directamente.');
+      showLinkStatus('Error: ' + err.message + '. Revisa el link de SharePoint o que el Worker esté activo.', 'err');
       console.warn('SharePoint fetch error:', err);
     }
   }
-  window.xlsxLoadFromURL = loadFromURL;
+  // Atajo de consola
+  window.xlsxLoadFromURL = function(u) { loadFromURL(u, XLSX_WORKER_URL); };
 
   // ─── Listeners ────────────────────────────────────────────────────────────────
 
-  document.getElementById('btn-xlsx').addEventListener('click', function() {
-    document.getElementById('xlsx-file-input').click();
+  document.getElementById('btn-xlsx').addEventListener('click', openXlsxModal);
+
+  document.getElementById('xlsx-modal-close').addEventListener('click', closeXlsxModal);
+  document.getElementById('xlsx-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeXlsxModal();
+  });
+
+  // Zona de archivo dentro del modal
+  var xdrop = document.getElementById('xlsx-drop');
+  xdrop.addEventListener('click', function() { document.getElementById('xlsx-file-input').click(); });
+  xdrop.addEventListener('dragover', function(e) { e.preventDefault(); xdrop.classList.add('drag-over'); });
+  xdrop.addEventListener('dragleave', function() { xdrop.classList.remove('drag-over'); });
+  xdrop.addEventListener('drop', function(e) {
+    e.preventDefault(); e.stopPropagation(); xdrop.classList.remove('drag-over');
+    var f = e.dataTransfer.files[0];
+    if (f) { handleFile(f); closeXlsxModal(); }
+  });
+
+  // Botón: cargar desde link de SharePoint
+  document.getElementById('xlsx-load-link').addEventListener('click', function() {
+    var spUrl = document.getElementById('xlsx-sp-url').value.trim();
+    if (!spUrl) { showLinkStatus('Pega el link del Excel en SharePoint.', 'err'); return; }
+    localStorage.setItem(LS_SPURL, spUrl);
+    loadFromURL(spUrl, XLSX_WORKER_URL);
   });
 
   document.getElementById('xlsx-file-input').addEventListener('change', function(e) {
     var file = e.target.files[0];
-    if (file) handleFile(file);
+    if (file) { handleFile(file); closeXlsxModal(); }
     e.target.value = '';
   });
 
