@@ -2852,16 +2852,27 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
       // Mes completo: todas las filas de días de todas las semanas
       weekRows = rows.slice(9).filter(function(r) { return dayLabels.indexOf(r[1]) !== -1; });
     }
-    // Acumular meta, venta, tx, unidades y CRM por asesor
+    // Columna "TRAFICO X día" (columna FM): tráfico de tienda por día
+    var headerRow = rows[8] || [];
+    var trafficCol = -1;
+    for (var hc = 0; hc < headerRow.length; hc++) {
+      if (typeof headerRow[hc] === 'string' && /tr[aá]fico/i.test(headerRow[hc])) { trafficCol = hc; break; }
+    }
+    // Acumular meta, venta, tx, unidades, CRM y tráfico por asesor
     var result = {};
     advisorCols.forEach(function(ac) {
-      var meta = 0, venta = 0, tx = 0, unidades = 0, crmTx = 0;
+      var meta = 0, venta = 0, tx = 0, unidades = 0, crmTx = 0, traffic = 0;
       weekRows.forEach(function(r) {
-        meta     += Number(r[ac.col + 0]) || 0;  // Meta diaria del periodo
+        var dayMeta = Number(r[ac.col + 0]) || 0;  // Meta diaria del asesor ese día
+        meta     += dayMeta;
         venta    += Number(r[ac.col + 1]) || 0;
         tx       += Number(r[ac.col + 2]) || 0;
         unidades += Number(r[ac.col + 3]) || 0;
         crmTx    += Number(r[ac.col + 4]) || 0;
+        // Tráfico: solo se suma en los días en que el asesor tiene meta
+        if (trafficCol !== -1 && dayMeta > 0) {
+          traffic += Number(r[trafficCol]) || 0;
+        }
       });
       result[ac.empId] = {
         meta:     roundPeso(meta),
@@ -2869,6 +2880,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
         tx:       Math.round(tx),
         unidades: Math.round(unidades),
         crmTx:    Math.round(crmTx),
+        traffic:  Math.round(traffic),
       };
     });
     return result;
@@ -3001,7 +3013,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
           sales:       sales,
           tx:          d.tx       !== undefined ? d.tx       : a.tx,
           units:       d.unidades !== undefined ? d.unidades : a.unidades,
-          traffic:     existing ? (existing.traffic    || 0) : 0,
+          traffic:     d.traffic !== undefined ? d.traffic : (existing ? (existing.traffic || 0) : 0),
           note:        existing ? (existing.note        || '') : '',
           prevSales:   existing ? (existing.prevSales   || 0) : 0,
           prevTicket:  existing ? (existing.prevTicket  || 0) : 0,
