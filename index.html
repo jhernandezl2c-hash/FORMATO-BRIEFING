@@ -45,7 +45,7 @@
   .page { position: relative; z-index: 1; }
   .page { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
   h1, h2, h3, p { margin: 0; }
-  h1 { font-size: 26px; font-weight: 600; font-family: 'Playfair Display', Georgia, serif; font-style: normal; letter-spacing: -0.01em; }
+  h1 { font-size: 26px; font-weight: 600; font-family: 'Playfair Display', Georgia, serif; font-style: normal; letter-spacing: -0.01em; white-space: nowrap; }
   h2 { font-size: 20px; font-weight: 500; font-family: 'Playfair Display', Georgia, serif; font-style: normal; letter-spacing: -0.01em; }
   h3 { font-size: 16px; font-weight: 600; }
 
@@ -413,9 +413,8 @@
     border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 15px;
     background: var(--bg);
     box-shadow: none;
-    color: var(--text); outline: none; letter-spacing: 0.06em;
+    color: var(--text); outline: none; letter-spacing: normal;
   }
-  #login-store { letter-spacing: 0.01em; }
   #login-input:focus, #login-store:focus {
     border-color: var(--accent); box-shadow: 0 0 0 2px rgba(63,77,99,0.12);
   }
@@ -448,35 +447,36 @@
     z-index: 1;
     padding: 20px;
   }
-  #lw-check { width: 78px; height: 78px; margin-bottom: 14px; }
+  #lw-check { width: 82px; height: 82px; margin-bottom: 16px; }
   #lw-check circle {
     fill: none; stroke: var(--accent); stroke-width: 2.5;
     stroke-dasharray: 151; stroke-dashoffset: 151;
-    animation: lwCircle 0.6s cubic-bezier(0.23,1,0.32,1) forwards;
+    animation: lwCircle 0.9s cubic-bezier(0.23,1,0.32,1) forwards;
   }
   #lw-check path {
     fill: none; stroke: var(--accent); stroke-width: 3.5;
     stroke-linecap: round; stroke-linejoin: round;
     stroke-dasharray: 40; stroke-dashoffset: 40;
-    animation: lwCheck 0.4s 0.5s cubic-bezier(0.23,1,0.32,1) forwards;
+    animation: lwCheck 0.6s 0.8s cubic-bezier(0.23,1,0.32,1) forwards;
   }
   @keyframes lwCircle { to { stroke-dashoffset: 0; } }
   @keyframes lwCheck  { to { stroke-dashoffset: 0; } }
   #lw-sub {
+    font-family: 'DM Sans', system-ui, sans-serif;
     font-size: 12px; color: var(--muted);
     letter-spacing: 0.14em; text-transform: uppercase;
-    opacity: 0; animation: lwFade 0.5s 0.8s ease-out forwards;
+    opacity: 0; animation: lwFade 0.6s 1.3s ease-out forwards;
   }
   #lw-title {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 26px; color: var(--text); margin-top: 6px;
-    opacity: 0; animation: lwUp 0.6s 1.0s cubic-bezier(0.23,1,0.32,1) forwards;
+    font-size: 26px; font-weight: 500; color: var(--text); margin-top: 8px;
+    opacity: 0; animation: lwUp 0.7s 1.6s cubic-bezier(0.23,1,0.32,1) forwards;
   }
   #lw-store {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 30px; font-style: italic; color: var(--accent);
-    line-height: 1.2;
-    opacity: 0; animation: lwUp 0.6s 1.2s cubic-bezier(0.23,1,0.32,1) forwards;
+    font-size: 32px; font-weight: 600; font-style: normal; color: var(--accent);
+    letter-spacing: -0.01em; line-height: 1.2; white-space: nowrap;
+    opacity: 0; animation: lwUp 0.8s 1.9s cubic-bezier(0.23,1,0.32,1) forwards;
   }
   @keyframes lwFade { to { opacity: 1; } }
   @keyframes lwUp {
@@ -559,15 +559,16 @@
   }
 
   function showWelcome(store){
+    if (window.applyLoginStore) window.applyLoginStore(store);
     document.getElementById('login-box').style.display = 'none';
     document.getElementById('lw-store').textContent = store;
     document.getElementById('login-welcome').style.display = 'flex';
     setTimeout(function(){
       var ov = document.getElementById('login-overlay');
-      ov.style.transition = 'opacity 0.55s ease';
+      ov.style.transition = 'opacity 0.7s ease';
       ov.style.opacity = '0';
-      setTimeout(function(){ ov.style.display = 'none'; }, 580);
-    }, 2700);
+      setTimeout(function(){ ov.style.display = 'none'; }, 720);
+    }, 5000);
   }
 
   function tryLogin(){
@@ -2349,6 +2350,13 @@ state = loadState();
 // Nombre de tienda capturado en el login
 var _loginStore = sessionStorage.getItem('thsa_store');
 if (_loginStore) state.storeTitle = _loginStore;
+// Permite que el login aplique el nombre de tienda en vivo (sobrescribe el actual)
+window.applyLoginStore = function(name) {
+  if (!name) return;
+  state.storeTitle = String(name).trim();
+  renderHeader();
+  saveState();
+};
 renderHeader();
 renderStoreStats();
 renderBrechas();
