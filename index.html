@@ -2782,6 +2782,9 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     return advisors;
   }
 
+  // Redondeo estándar a entero: ≥ .50 sube al siguiente número
+  function roundPeso(n) { return Math.round(Number(n) || 0); }
+
   function parseDiarioVentas(wb, selectedWeek) {
     var ws = wb.Sheets['Diario de ventas'];
     if (!ws) return {};
@@ -2795,7 +2798,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
         advisorCols.push({ col: col, empId: idRow[col], name: String(nameRow[col] || '').trim() });
       }
     }
-    // Filas de la semana seleccionada
+    // Filas del periodo seleccionado (semana o mes completo)
     var dayLabels = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
     var weekRows = [];
     if (selectedWeek) {
@@ -2811,19 +2814,27 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
         weekRows = rows.slice(start, end).filter(function(r) { return dayLabels.indexOf(r[1]) !== -1; });
       }
     } else {
+      // Mes completo: todas las filas de días de todas las semanas
       weekRows = rows.slice(9).filter(function(r) { return dayLabels.indexOf(r[1]) !== -1; });
     }
-    // Acumular por asesor
+    // Acumular meta, venta, tx, unidades y CRM por asesor
     var result = {};
     advisorCols.forEach(function(ac) {
-      var venta = 0, tx = 0, unidades = 0, crmTx = 0;
+      var meta = 0, venta = 0, tx = 0, unidades = 0, crmTx = 0;
       weekRows.forEach(function(r) {
+        meta     += Number(r[ac.col + 0]) || 0;  // Meta diaria del periodo
         venta    += Number(r[ac.col + 1]) || 0;
         tx       += Number(r[ac.col + 2]) || 0;
         unidades += Number(r[ac.col + 3]) || 0;
         crmTx    += Number(r[ac.col + 4]) || 0;
       });
-      result[ac.empId] = { venta: venta, tx: tx, unidades: unidades, crmTx: crmTx };
+      result[ac.empId] = {
+        meta:     roundPeso(meta),
+        venta:    roundPeso(venta),
+        tx:       Math.round(tx),
+        unidades: Math.round(unidades),
+        crmTx:    Math.round(crmTx),
+      };
     });
     return result;
   }
@@ -2879,9 +2890,10 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
   };
 
   function applyExcel(wb, selectedWeek) {
-    var kpis   = parseKPIsGenerales(wb, selectedWeek);
-    var monthly = parseKPIsColaborador(wb);
-    var weekly  = selectedWeek ? parseDiarioVentas(wb, selectedWeek) : null;
+    var kpis       = parseKPIsGenerales(wb, selectedWeek);
+    var monthly    = parseKPIsColaborador(wb);
+    // Siempre usar Diario de ventas como fuente principal (semanal o mes completo)
+    var diario     = parseDiarioVentas(wb, selectedWeek);
     var comisiones = parseComisiones(wb);
 
     _xlsxState.weeks         = kpis ? kpis.weeks : [];
@@ -2890,21 +2902,24 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
 
     if (monthly.length > 0) {
       state.advisors = monthly.map(function(a) {
-        var w   = weekly ? (weekly[a.empId] || {}) : null;
+        var d = diario[a.empId] || {};
         var existing = state.advisors.find(function(e) {
           return String(e.empId) === String(a.empId) ||
                  e.name.trim().toLowerCase() === a.name.toLowerCase();
         });
+        // Meta y ventas siempre desde Diario de ventas; fallback a KPIs x Colaborador
+        var meta  = d.meta  !== undefined ? d.meta  : roundPeso(a.meta);
+        var sales = d.venta !== undefined ? d.venta : roundPeso(a.venta);
         return {
           id:          String(a.empId),
           empId:       a.empId,
           name:        a.name,
           role:        ROLE_MAP[a.role] || 'Vendedor',
-          meta:        a.meta,
-          min:         a.meta / 1.15,
-          sales:       w ? w.venta    : a.venta,
-          tx:          w ? w.tx       : a.tx,
-          units:       w ? w.unidades : a.unidades,
+          meta:        meta,
+          min:         roundPeso(meta / 1.15),
+          sales:       sales,
+          tx:          d.tx       !== undefined ? d.tx       : a.tx,
+          units:       d.unidades !== undefined ? d.unidades : a.unidades,
           traffic:     existing ? (existing.traffic    || 0) : 0,
           note:        existing ? (existing.note        || '') : '',
           prevSales:   existing ? (existing.prevSales   || 0) : 0,
