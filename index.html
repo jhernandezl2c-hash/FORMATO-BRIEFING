@@ -2749,6 +2749,12 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
   // URL del Worker de Cloudflare (proxy CORS para descargar el Excel de SharePoint)
   var XLSX_WORKER_URL = 'https://thsa-excel-proxy.jhernandezl2c.workers.dev';
 
+  // Recarga automática desde SharePoint (cada 5 minutos)
+  var AUTO_RELOAD_MS   = 5 * 60 * 1000;
+  var _autoReloadTimer = null;
+  var _autoReloadUrl   = null;
+  var _lastSync        = null;
+
   // ─── Parsers ────────────────────────────────────────────────────────────────
 
   function parseKPIsGenerales(wb, selectedWeek) {
@@ -3030,7 +3036,10 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     _xlsxState.weeks.forEach(function(w) {
       html += '<button class="week-btn' + (sw === w ? ' active' : '') + '" data-week="' + w + '">' + w + '</button>';
     });
-    html += '<span class="week-bar-info">Excel cargado &middot; selecciona el periodo</span>';
+    var info = _autoReloadTimer
+      ? 'Auto-actualización activa' + (_lastSync ? ' &middot; última ' + _lastSync : '')
+      : 'Excel cargado &middot; selecciona el periodo';
+    html += '<span class="week-bar-info">' + info + '</span>';
     bar.innerHTML = html;
     bar.querySelectorAll('.week-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -3165,6 +3174,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
       try {
         var wb = XLSX.read(e.target.result, { type: 'array' });
         _wb = wb;
+        stopAutoReload();  // archivo manual: se desactiva la sincronización por link
         applyExcel(wb, null);
         var wkCount = _xlsxState.weeks.length;
         showToast('Excel cargado — ' + wkCount + ' semana' + (wkCount !== 1 ? 's' : '') + ' detectada' + (wkCount !== 1 ? 's' : ''));
@@ -3221,15 +3231,52 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
       var buf = await res.arrayBuffer();
       var wb = XLSX.read(buf, { type: 'array' });
       _wb = wb;
+      _lastSync = nowHHMM();
+      startAutoReload(url);
       applyExcel(wb, null);
       var wkCount = _xlsxState.weeks.length;
-      showLinkStatus('✓ Excel cargado — ' + wkCount + ' semana' + (wkCount !== 1 ? 's' : '') + ' detectada' + (wkCount !== 1 ? 's' : ''), 'ok');
-      setTimeout(closeXlsxModal, 1000);
+      showLinkStatus('✓ Excel cargado — ' + wkCount + ' semana' + (wkCount !== 1 ? 's' : '') + ' detectada' + (wkCount !== 1 ? 's' : '') + '. Auto-actualización activa cada 5 min.', 'ok');
+      setTimeout(closeXlsxModal, 1400);
     } catch (err) {
       showLinkStatus('Error: ' + err.message, 'err');
       console.warn('SharePoint fetch error:', err);
     }
   }
+
+  // ─── Recarga automática cada 5 minutos ───────────────────────────────────────
+
+  function nowHHMM() {
+    return new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function startAutoReload(spUrl) {
+    _autoReloadUrl = spUrl;
+    if (_autoReloadTimer) clearInterval(_autoReloadTimer);
+    _autoReloadTimer = setInterval(autoReloadTick, AUTO_RELOAD_MS);
+  }
+
+  function stopAutoReload() {
+    if (_autoReloadTimer) { clearInterval(_autoReloadTimer); _autoReloadTimer = null; }
+    _autoReloadUrl = null;
+  }
+
+  async function autoReloadTick() {
+    if (!_autoReloadUrl || typeof XLSX === 'undefined') return;
+    try {
+      var fetchUrl = XLSX_WORKER_URL.replace(/\/+$/, '') + '/?url=' + encodeURIComponent(_autoReloadUrl);
+      var res = await fetch(fetchUrl);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var buf = await res.arrayBuffer();
+      var wb = XLSX.read(buf, { type: 'array' });
+      _wb = wb;
+      _lastSync = nowHHMM();
+      applyExcel(wb, _xlsxState.selectedWeek);  // conserva la semana seleccionada
+      console.log('Auto-recarga RDV OK — ' + _lastSync);
+    } catch (err) {
+      console.warn('Auto-recarga falló (se reintenta en 5 min):', err);
+    }
+  }
+
   // Atajo de consola
   window.xlsxLoadFromURL = function(u) { loadFromURL(u, XLSX_WORKER_URL); };
 
