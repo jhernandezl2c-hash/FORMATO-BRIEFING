@@ -510,6 +510,30 @@
 })();
 </script>
 <canvas id="bg-canvas"></canvas>
+
+<!-- ── Modal Excel RDV: archivo o link (fuera de .page para que position:fixed funcione) ── -->
+<div class="pbi-overlay hidden" id="xlsx-overlay">
+  <div class="pbi-modal" style="max-width:480px;">
+    <button class="pbi-close" id="xlsx-modal-close" title="Cerrar">✕</button>
+    <h3>Cargar Excel RDV</h3>
+    <p>Sube el archivo manualmente o cárgalo desde un link de SharePoint.</p>
+
+    <div class="pbi-drop" id="xlsx-drop">📂 Haz clic o arrastra el archivo .xlsx aquí</div>
+
+    <div class="xlsx-divider"><span>o</span></div>
+
+    <p class="pbi-mapper-title">Cargar desde SharePoint</p>
+    <label class="xlsx-field-label">Link del Excel en SharePoint (se guarda)</label>
+    <input type="text" id="xlsx-sp-url" class="xlsx-input" placeholder="https://...sharepoint.com/..." autocomplete="off" spellcheck="false">
+    <button class="btn btn-primary" id="xlsx-load-link" style="width:100%; margin-top:12px; font-size:12px;">⬇ Cargar desde link</button>
+    <div id="xlsx-link-status" class="pbi-status" style="display:none; margin-top:10px;"></div>
+
+    <div class="pbi-steps" style="margin-top:14px;">
+      Pega el link "Compartir → cualquier persona con el vínculo" del Excel en SharePoint. El link queda guardado en este navegador.
+    </div>
+  </div>
+</div>
+
 <div class="page">
 
 
@@ -528,29 +552,6 @@
   </div>
   <input type="file" id="xlsx-file-input" accept=".xlsx,.xls,.xlsm" style="display:none">
   <div class="week-bar" id="xlsx-week-bar"></div>
-
-  <!-- ── Modal Excel RDV: archivo o link de SharePoint ── -->
-  <div class="pbi-overlay hidden" id="xlsx-overlay">
-    <div class="pbi-modal" style="max-width:480px;">
-      <button class="pbi-close" id="xlsx-modal-close" title="Cerrar">✕</button>
-      <h3>Cargar Excel RDV</h3>
-      <p>Sube el archivo manualmente o cárgalo desde un link de SharePoint.</p>
-
-      <div class="pbi-drop" id="xlsx-drop">📂 Haz clic o arrastra el archivo .xlsx aquí</div>
-
-      <div class="xlsx-divider"><span>o</span></div>
-
-      <p class="pbi-mapper-title">Cargar desde SharePoint</p>
-      <label class="xlsx-field-label">Link del Excel en SharePoint (se guarda)</label>
-      <input type="text" id="xlsx-sp-url" class="xlsx-input" placeholder="https://...sharepoint.com/..." autocomplete="off" spellcheck="false">
-      <button class="btn btn-primary" id="xlsx-load-link" style="width:100%; margin-top:12px; font-size:12px;">⬇ Cargar desde link</button>
-      <div id="xlsx-link-status" class="pbi-status" style="display:none; margin-top:10px;"></div>
-
-      <div class="pbi-steps" style="margin-top:14px;">
-        Pega el link "Compartir → cualquier persona con el vínculo" del Excel en SharePoint. El link queda guardado en este navegador.
-      </div>
-    </div>
-  </div>
 
   <div class="surface">
     <h2 style="margin-bottom: 4px;">Resultado de tienda</h2>
