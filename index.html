@@ -6,17 +6,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=Instrument+Serif:ital@0;1&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
-<title>BRIEFING TH BY ADRIAN</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231A2E5A'/><text x='16' y='22' font-family='Arial,sans-serif' font-size='14' font-weight='700' fill='white' text-anchor='middle' letter-spacing='0.5'>TH</text></svg>">
+<title>Briefing de Ventas · TH</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233F4D63'/><text x='16' y='22' font-family='Arial,sans-serif' font-size='14' font-weight='700' fill='white' text-anchor='middle' letter-spacing='0.5'>TH</text></svg>">
 <style>
   :root {
-    --bg:          #F7F6F3;
+    --bg:          #F5F6F8;
     --surface:     #FFFFFF;
-    --text:        #18181A;
-    --muted:       #6B6966;
-    --accent:      #1A2E5A;
-    --border:      rgba(0,0,0,0.10);
-    --border-s:    rgba(0,0,0,0.06);
+    --text:        #1E2329;
+    --muted:       #6B7280;
+    --accent:      #3F4D63;
+    --border:      rgba(0,0,0,0.08);
+    --border-s:    rgba(0,0,0,0.05);
 
     --c-green-bg:  #ECF4E6;
     --c-green-fg:  #2A5F14;
@@ -27,9 +27,9 @@
     --c-red-fg:    #8B1E1E;
     --c-red-deep:  #5C1010;
     --c-card:      #FFFFFF;
-    --c-secondary: #6B6966;
-    --c-brand:     #1A2E5A;
-    --c-text:      #18181A;
+    --c-secondary: #6B7280;
+    --c-brand:     #3F4D63;
+    --c-text:      #1E2329;
   }
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -67,7 +67,7 @@
 
   .editable-text { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 1px 6px; font: inherit; color: inherit; cursor: text; min-width: 40px; }
   .editable-text:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }
-  .editable-text:focus { outline: none; background: rgba(255,255,255,0.85); border-color: #1A2E5A; }
+  .editable-text:focus { outline: none; background: rgba(255,255,255,0.85); border-color: #3F4D63; }
 
   input[type=number] { font-variant-numeric: tabular-nums; }
   input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -123,20 +123,20 @@
   .input-cell { display: flex; flex-direction: column; gap: 3px; }
   .input-cell label { font-size: 10px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
   .input-cell input { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 5px; font: inherit; font-size: 13px; background: var(--surface); font-variant-numeric: tabular-nums; box-shadow: none; transition: border-color 0.2s, box-shadow 0.2s; }
-  .input-cell input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(26,46,90,0.12); color: var(--text); }
+  .input-cell input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(63,77,99,0.12); color: var(--text); }
   .input-cell input[readonly] { background: var(--bg); border-color: var(--border-s); color: var(--muted); cursor: default; }
   .input-cell input[readonly]:focus { border-color: var(--border-s); box-shadow: none; }
   .input-cell label.label-auto::after { content: " · auto"; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 10px; }
 
   .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { background: var(--bg); border: 1px solid var(--border-s); font-size: 12px; padding: 3px 10px; border-radius: 8px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .chip-strong { background: #E8EDF5; color: var(--c-brand); font-weight: 500; }
+  .chip-strong { background: #EAECEF; color: var(--c-brand); font-weight: 500; }
 
   #advisor-list { display: flex; flex-direction: column; }
 
   .add-card { background: var(--bg); border: 1.5px dashed var(--border); border-radius: 8px; padding: 14px; text-align: center; color: var(--muted); font-size: 13px; cursor: pointer; transition: border-color 0.18s, color 0.18s, background 0.18s, transform 0.18s cubic-bezier(0.23,1,0.32,1); box-shadow: none; }
   @media (hover: hover) and (pointer: fine) {
-    .add-card:hover { border-color: var(--accent); color: var(--accent); background: rgba(26,46,90,0.02); transform: translateY(-2px); }
+    .add-card:hover { border-color: var(--accent); color: var(--accent); background: rgba(63,77,99,0.02); transform: translateY(-2px); }
   }
 
   .chart-wrap { position: relative; width: 100%; height: 240px; margin-bottom: 1rem; }
@@ -149,7 +149,7 @@
   .day-cell { display: flex; flex-direction: column; align-items: center; gap: 5px; }
   .day-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
   .day-cell input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 7px 6px; font-size: 13px; font-family: inherit; text-align: center; background: var(--bg); color: var(--text); font-variant-numeric: tabular-nums; }
-  .day-cell input:focus { outline: none; border-color: #1A2E5A; background: var(--surface); }
+  .day-cell input:focus { outline: none; border-color: #3F4D63; background: var(--surface); }
   .day-chart-wrap { position: relative; height: 160px; margin-bottom: 14px; }
 
   .day-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
@@ -183,7 +183,7 @@
   .focus-impact { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .briefing-note-wrap { padding: 0 14px 12px; }
   .briefing-note { width: 100%; border: 1px solid var(--border); border-radius: 5px; padding: 6px 10px; font: inherit; font-size: 12px; resize: none; min-height: 36px; background: var(--bg); box-shadow: none; }
-  .briefing-note:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(26,46,90,0.12); }
+  .briefing-note:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(63,77,99,0.12); }
 
   /* ── Advisor card collapsible ── */
   .advisor-toggle { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 6px; border-radius: 4px; line-height: 1; transition: transform 0.2s; }
@@ -209,7 +209,7 @@
   body.present-mode .stat-value { font-size: 28px; }
   body.present-mode #present-bar { display: flex; }
 
-  #present-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #1A2E5A; color: white; padding: 10px 24px; font-size: 13px; align-items: center; justify-content: space-between; z-index: 50; }
+  #present-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #3F4D63; color: white; padding: 10px 24px; font-size: 13px; align-items: center; justify-content: space-between; z-index: 50; }
 
   /* ── Print / PDF ── */
   @media print {
@@ -241,7 +241,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: rgba(26,46,90,0.05);
+    background: rgba(63,77,99,0.05);
     border: 1px solid var(--border);
     border-radius: 10px;
     margin-bottom: 0;
@@ -364,7 +364,7 @@
     background: var(--accent);
     color: white; border-radius: 20px; padding: 11px 20px;
     font-size: 13px; font-weight: 600; white-space: nowrap;
-    box-shadow: 0 4px 16px rgba(26,46,90,0.25);
+    box-shadow: 0 4px 16px rgba(63,77,99,0.25);
     display: flex; align-items: center; gap: 8px; transform: translateX(-50%);
     letter-spacing: 0;
   }
@@ -416,7 +416,7 @@
     color: var(--text); outline: none; letter-spacing: 0.06em;
   }
   #login-input:focus {
-    border-color: var(--accent); box-shadow: 0 0 0 2px rgba(26,46,90,0.12);
+    border-color: var(--accent); box-shadow: 0 0 0 2px rgba(63,77,99,0.12);
   }
   #login-btn {
     width: 100%; padding: 12px;
@@ -442,11 +442,11 @@
   .pbi-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; padding: 28px 28px 20px; position: relative; }
   .pbi-modal h3 { margin: 0 0 6px; font-size: 17px; font-weight: 600; color: var(--c-brand); }
   .pbi-modal > p { font-size: 13px; color: var(--muted); margin: 0 0 16px; }
-  .pbi-steps { background: rgba(26,46,90,0.06); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; font-size: 12px; line-height: 1.7; color: #2a3a5e; }
+  .pbi-steps { background: rgba(63,77,99,0.06); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; font-size: 12px; line-height: 1.7; color: #3F4D63; }
   .pbi-steps ol { margin: 0; padding-left: 18px; }
   .pbi-steps li { margin-bottom: 2px; }
   .pbi-drop { border: 1.5px dashed var(--border); border-radius: 8px; padding: 22px; text-align: center; cursor: pointer; color: var(--muted); font-size: 13px; transition: border-color 0.18s, background 0.18s, color 0.18s; margin-bottom: 16px; background: var(--bg); }
-  .pbi-drop:hover, .pbi-drop.drag-over { border-color: var(--accent); background: rgba(26,46,90,0.03); color: var(--accent); }
+  .pbi-drop:hover, .pbi-drop.drag-over { border-color: var(--accent); background: rgba(63,77,99,0.03); color: var(--accent); }
   .pbi-mapper { display: none; }
   .pbi-mapper.visible { display: block; }
   .pbi-mapper-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 8px; }
@@ -540,7 +540,7 @@
   <div class="header">
     <div class="header-info">
       <h1><span class="editable-text" data-store="storeTitle">Nombre de la tienda</span></h1>
-      <p style="font-size: 13px; color: #5F5E5A; margin-top: 4px;"><span class="editable-text" data-store="storeSubtitle">Cierre semanal</span></p>
+      <p style="font-size: 13px; color: #6B7280; margin-top: 4px;"><span class="editable-text" data-store="storeSubtitle">Cierre semanal</span></p>
     </div>
     <div class="toolbar">
       <button class="btn btn-present" id="btn-present" title="Modo presentación para briefing">⊞ Presentar</button>
@@ -555,7 +555,7 @@
 
   <div class="surface">
     <h2 style="margin-bottom: 4px;">Resultado de tienda</h2>
-    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">Meta y mínimo de tienda se calculan automáticamente sumando los asesores. El mínimo de cada asesor es Meta ÷ 1.15.</p>
+    <p style="font-size: 13px; color: #6B7280; margin-bottom: 14px;">Meta y mínimo de tienda se calculan automáticamente sumando los asesores. El mínimo de cada asesor es Meta ÷ 1.15.</p>
 
     <div class="inputs-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 14px;">
       <div class="input-cell">
@@ -576,18 +576,18 @@
 
   <div class="surface">
     <h2 style="margin-bottom: 4px;">Brechas de tienda</h2>
-    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">Cuánto le falta (o le sobra) a la tienda para alcanzar el mínimo y la meta.</p>
+    <p style="font-size: 13px; color: #6B7280; margin-bottom: 14px;">Cuánto le falta (o le sobra) a la tienda para alcanzar el mínimo y la meta.</p>
 
     <div class="grid-auto" id="brechas-stats" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));"></div>
 
     <p class="section-label" style="margin-top: 18px;">Reparto sugerido de la brecha</p>
-    <p style="font-size: 12px; color: #5F5E5A; margin-bottom: 10px;" id="brechas-reparto-label">Distribución proporcional según la brecha individual de cada asesor.</p>
+    <p style="font-size: 12px; color: #6B7280; margin-bottom: 10px;" id="brechas-reparto-label">Distribución proporcional según la brecha individual de cada asesor.</p>
     <div id="brechas-reparto"></div>
   </div>
 
   <div class="surface" id="section-briefing">
     <h2 style="margin-bottom: 4px;">Resumen de briefing</h2>
-    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">KPI crítico de cada asesor, impacto de mejorarlo y espacio para el compromiso de la junta.</p>
+    <p style="font-size: 13px; color: #6B7280; margin-bottom: 14px;">KPI crítico de cada asesor, impacto de mejorarlo y espacio para el compromiso de la junta.</p>
     <div id="briefing-list"></div>
   </div>
 
@@ -599,7 +599,7 @@
 
   <div class="surface">
     <h2 style="margin-bottom: 4px;">Proyección de cierre con tráfico</h2>
-    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">Estima la venta y los KPIs al cierre del periodo a partir del tráfico esperado y la conversión objetivo.</p>
+    <p style="font-size: 13px; color: #6B7280; margin-bottom: 14px;">Estima la venta y los KPIs al cierre del periodo a partir del tráfico esperado y la conversión objetivo.</p>
 
     <p class="section-label">Datos actuales</p>
     <div class="inputs-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 12px;">
@@ -637,7 +637,7 @@
 
   <div class="surface">
     <h2 style="margin-bottom: 4px;">Comparativas</h2>
-    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">Asesores ordenados por alcance vs mínimo</p>
+    <p style="font-size: 13px; color: #6B7280; margin-bottom: 14px;">Asesores ordenados por alcance vs mínimo</p>
 
     <div class="legend-row">
       <span class="legend-item"><span class="legend-swatch" style="background: #639922;"></span>Pasó mínimo (≥100%)</span>
@@ -646,21 +646,21 @@
     </div>
 
     <p style="font-size: 13px; font-weight: 500; margin: 8px 0 4px;">AUR (Average Unit Retail)</p>
-    <p style="font-size: 12px; color: #5F5E5A; margin-bottom: 8px;" id="ticket-avg-label">Promedio de tienda: —</p>
+    <p style="font-size: 12px; color: #6B7280; margin-bottom: 8px;" id="ticket-avg-label">Promedio de tienda: —</p>
     <div class="chart-wrap"><canvas id="chart-ticket"></canvas></div>
 
     <p style="font-size: 13px; font-weight: 500; margin: 1rem 0 4px;">UPT — unidades por transacción</p>
-    <p style="font-size: 12px; color: #5F5E5A; margin-bottom: 8px;" id="upt-avg-label">Promedio de tienda: —</p>
+    <p style="font-size: 12px; color: #6B7280; margin-bottom: 8px;" id="upt-avg-label">Promedio de tienda: —</p>
     <div class="chart-wrap"><canvas id="chart-upt"></canvas></div>
 
     <p style="font-size: 13px; font-weight: 500; margin: 1rem 0 4px;">Alcance vs meta individual</p>
-    <p style="font-size: 12px; color: #5F5E5A; margin-bottom: 8px;">Línea verde: meta cumplida (100%)</p>
+    <p style="font-size: 12px; color: #6B7280; margin-bottom: 8px;">Línea verde: meta cumplida (100%)</p>
     <div class="chart-wrap"><canvas id="chart-alcance"></canvas></div>
   </div>
 
   <div class="surface">
     <h2 style="margin-bottom: 4px;">Ritmo de ventas por día</h2>
-    <p style="font-size: 13px; color: #5F5E5A; margin-bottom: 14px;">Registra las ventas de cada día para identificar patrones y picos del equipo.</p>
+    <p style="font-size: 13px; color: #6B7280; margin-bottom: 14px;">Registra las ventas de cada día para identificar patrones y picos del equipo.</p>
 
     <div class="day-inputs" id="day-inputs"></div>
 
@@ -1033,7 +1033,7 @@ function renderBrechas() {
   repartoLabel.innerHTML = `Distribución proporcional para cerrar el faltante de <strong>${fmtMXN(targetGap)}</strong> hacia el ${targetName} de tienda, según la brecha individual de cada asesor.`;
 
   if (totalIndivGap === 0) {
-    repartoEl.innerHTML = '<p style="font-size: 13px; color: #5F5E5A;">Todos los asesores ya cumplieron su meta individual. La brecha vs ' + targetName + ' de tienda no se puede repartir proporcionalmente.</p>';
+    repartoEl.innerHTML = '<p style="font-size: 13px; color: #6B7280;">Todos los asesores ya cumplieron su meta individual. La brecha vs ' + targetName + ' de tienda no se puede repartir proporcionalmente.</p>';
     return;
   }
 
@@ -1050,9 +1050,9 @@ function renderBrechas() {
     <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 9px 12px; background: white; border: 0.5px solid rgba(0,0,0,0.15); border-radius: 6px; margin-bottom: 6px; font-size: 13px;">
       <div>
         <div style="font-weight: 500;">${r.name}</div>
-        <div style="font-size: 11px; color: #5F5E5A;">${r.role} · brecha individual ${fmtMXN(r.indivGap)}</div>
+        <div style="font-size: 11px; color: #6B7280;">${r.role} · brecha individual ${fmtMXN(r.indivGap)}</div>
       </div>
-      <div style="font-size: 12px; color: #5F5E5A; font-variant-numeric: tabular-nums;">${(r.share * 100).toFixed(1)}%</div>
+      <div style="font-size: 12px; color: #6B7280; font-variant-numeric: tabular-nums;">${(r.share * 100).toFixed(1)}%</div>
       <div style="font-weight: 500; font-variant-numeric: tabular-nums; min-width: 95px; text-align: right;">${fmtMXN(r.portion)}</div>
     </div>
   `).join('');
@@ -1170,7 +1170,7 @@ function renderAdvisors() {
           ${c.conv !== null ? `<span class="chip chip-strong" data-display="conv">Conv. ${c.conv.toFixed(2)}%</span>` : ''}
           <span class="chip" data-display="alcance-meta">${fmtPct(c.alcanceMeta)} vs meta</span>
           <span class="chip" data-display="brecha">${c.brecha > 0 ? 'Brecha ' + fmtMXN(c.brecha) : 'Excedente +' + fmtMXN(-c.brecha)}</span>
-          <span class="chip" style="background:#E8EDF5;color:#1A2E5A;${a.eticket > 0 ? '' : 'display:none;'}" data-display="eticket">🎫 Alcance ticket ${a.eticket > 0 && a.tx > 0 ? (a.eticket / a.tx * 100).toFixed(1) + '%' : ''}</span>
+          <span class="chip" style="background:#EAECEF;color:#3F4D63;${a.eticket > 0 ? '' : 'display:none;'}" data-display="eticket">🎫 Alcance ticket ${a.eticket > 0 && a.tx > 0 ? (a.eticket / a.tx * 100).toFixed(1) + '%' : ''}</span>
         </div>
       </div>
     `;
@@ -1528,7 +1528,7 @@ function renderProjection() {
     status.style.color = '#501313';
   } else {
     status.style.background = '#F1EFE8';
-    status.style.color = '#5F5E5A';
+    status.style.color = '#6B7280';
   }
   status.textContent = p.convRequiredText;
 }
@@ -1582,7 +1582,7 @@ function updateDayChart() {
   // Bar colors
   const colors = data.map((v, i) => {
     if (v === 0) return 'rgba(0,0,0,0.08)';
-    if (i === bestIdx && v > 0) return '#1A2E5A';
+    if (i === bestIdx && v > 0) return '#3F4D63';
     return '#8FA4C8';
   });
 
@@ -1620,7 +1620,7 @@ function updateDayChart() {
     </div>
     <div class="day-stat">
       <div class="day-stat-label">Mejor día</div>
-      <div class="day-stat-value" style="color:#1A2E5A;">${bestIdx >= 0 && maxVal > 0 ? DAY_LABELS[bestIdx] + ' · ' + fmtMXN(maxVal) : '—'}</div>
+      <div class="day-stat-value" style="color:#3F4D63;">${bestIdx >= 0 && maxVal > 0 ? DAY_LABELS[bestIdx] + ' · ' + fmtMXN(maxVal) : '—'}</div>
     </div>
     <div class="day-stat">
       <div class="day-stat-label">Promedio diario</div>
@@ -1897,12 +1897,12 @@ function renderBriefing() {
       <div class="briefing-row">
         <div class="briefing-avatar av-${status}">${initials}</div>
         <div>
-          <div class="briefing-name">${a.name} <span style="font-size:11px;color:#5F5E5A;font-weight:400;">${a.role}</span></div>
+          <div class="briefing-name">${a.name} <span style="font-size:11px;color:#6B7280;font-weight:400;">${a.role}</span></div>
           <div class="briefing-kpis">
             <span class="briefing-kpi-chip ${status === 'green' ? 'kpi-ok' : status === 'amber' ? 'kpi-warn' : 'kpi-bad'}">${fmtPct(c.alcanceMin)} mín · ${fmtPct(c.alcanceMeta)} meta</span>
             <span class="briefing-kpi-chip kpi-ok">AUR ${fmtMXN(c.ticket)}</span>
             <span class="briefing-kpi-chip kpi-ok">UPT ${fmtUpt(c.upt)}</span>
-            ${convIndiv ? `<span class="briefing-kpi-chip" style="background:#E8EDF5;color:#1A2E5A;">Conv. ${convIndiv}</span>` : ''}
+            ${convIndiv ? `<span class="briefing-kpi-chip" style="background:#EAECEF;color:#3F4D63;">Conv. ${convIndiv}</span>` : ''}
             ${deltaTag(salesVsPrev,  fmtMXN)}
             ${deltaTag(ticketVsPrev, fmtMXN)}
             ${deltaTag(uptVsPrev,    v => v.toFixed(2))}
@@ -1980,7 +1980,7 @@ function _noop_teamPanel() { return; // removed
   summary.innerHTML = `
     <div class="team-summary-stat">
       <div class="team-summary-label">Ventas equipo</div>
-      <div class="team-summary-value" style="color:#1A2E5A;">${fmtMXN(totalSalesCurr)}</div>
+      <div class="team-summary-value" style="color:#3F4D63;">${fmtMXN(totalSalesCurr)}</div>
       <div class="team-summary-delta">${deltaHtml(salesDelta, fmtMXN)}</div>
     </div>
     <div class="team-summary-stat">
@@ -2065,7 +2065,7 @@ function _noop_teamPanel() { return; // removed
 // ===== Celebraciones =====
 const celebrated = new Set();
 let _celebCheckPending = false;
-const CELEB_COLORS = ['#1A2E5A','#C8102E','#639922','#EF9F27','#9b59b6','#3498db','#e74c3c','#f1c40f','#2ecc71','#e91e8c'];
+const CELEB_COLORS = ['#3F4D63','#C8102E','#639922','#EF9F27','#9b59b6','#3498db','#e74c3c','#f1c40f','#2ecc71','#e91e8c'];
 
 function _confettiParticles(cx, cy, count, opts) {
   const canvas = document.createElement('canvas');
@@ -2180,8 +2180,8 @@ function celebrateStore() {
   msg.className = 'store-celeb-msg';
   msg.innerHTML = `
     <div style="font-size:58px;margin-bottom:10px;line-height:1;">🏆</div>
-    <div style="font-size:23px;font-weight:700;color:#1A2E5A;margin-bottom:8px;letter-spacing:0.01em;">¡Meta de tienda alcanzada!</div>
-    <div style="font-size:15px;color:#5F5E5A;margin-bottom:4px;">¡Felicidades a todo el equipo!</div>
+    <div style="font-size:23px;font-weight:700;color:#3F4D63;margin-bottom:8px;letter-spacing:0.01em;">¡Meta de tienda alcanzada!</div>
+    <div style="font-size:15px;color:#6B7280;margin-bottom:4px;">¡Felicidades a todo el equipo!</div>
     <div style="font-size:13px;color:#888780;margin-top:10px;">Toca en cualquier lugar para cerrar</div>
   `;
 
@@ -2647,7 +2647,7 @@ function openPBIModal() {
   document.getElementById('pbi-ocr-progress').style.display = 'none';
   document.getElementById('pbi-ocr-file').value = '';
   // Mostrar pestaña OCR por defecto
-  var AS = 'flex:1;font-size:11px;background:linear-gradient(145deg,#213e7a,#111f46);color:white;';
+  var AS = 'flex:1;font-size:11px;background:linear-gradient(145deg,#4A586E,#2C3645);color:white;';
   var IS = 'flex:1;font-size:11px;';
   document.getElementById('pbi-panel-ocr').style.display   = '';
   document.getElementById('pbi-panel-paste').style.display = 'none';
@@ -2678,11 +2678,11 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
   const ctx    = canvas.getContext('2d');
 
   const PALETTE = [
-    { r: 26,  g: 46,  b: 90,  a: 0.18 },  // navy
-    { r: 200, g: 16,  b: 46,  a: 0.14 },  // tommy red
-    { r: 26,  g: 46,  b: 90,  a: 0.09 },  // navy light
-    { r: 200, g: 16,  b: 46,  a: 0.08 },  // red light
-    { r: 255, g: 255, b: 255, a: 0.55 },  // white glow
+    { r: 63,  g: 77,  b: 99,  a: 0.13 },  // pizarra
+    { r: 63,  g: 77,  b: 99,  a: 0.07 },  // pizarra claro
+    { r: 107, g: 114, b: 128, a: 0.10 },  // gris
+    { r: 107, g: 114, b: 128, a: 0.05 },  // gris claro
+    { r: 255, g: 255, b: 255, a: 0.45 },  // brillo blanco
   ];
 
   let W, H, particles = [], raf;
@@ -3111,7 +3111,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
 
     section.innerHTML =
       '<h2 style="margin-bottom:4px;">Estimación de comisiones</h2>' +
-      '<p style="font-size:13px;color:#5F5E5A;margin-bottom:14px;">Calculadas con base en el alcance de tienda al cierre del periodo. Tasa aplicada según el nivel alcanzado.</p>' +
+      '<p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Calculadas con base en el alcance de tienda al cierre del periodo. Tasa aplicada según el nivel alcanzado.</p>' +
       bannerHtml +
       '<div class="comision-grid">' + cardsHtml + '</div>';
 
@@ -3340,7 +3340,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
 
     <!-- Pestañas -->
     <div style="display:flex; gap:6px; margin-bottom:14px;">
-      <button class="btn" id="pbi-tab-ocr"   style="flex:1; font-size:11px; background:linear-gradient(145deg,#213e7a,#111f46); color:white;">📷 Captura de pantalla</button>
+      <button class="btn" id="pbi-tab-ocr"   style="flex:1; font-size:11px; background:linear-gradient(145deg,#4A586E,#2C3645); color:white;">📷 Captura de pantalla</button>
       <button class="btn" id="pbi-tab-paste" style="flex:1; font-size:11px;">📋 Pegar texto</button>
       <button class="btn" id="pbi-tab-file"  style="flex:1; font-size:11px;">📂 Archivo CSV</button>
     </div>
@@ -3356,14 +3356,14 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
           <li>El sistema leerá los datos automáticamente</li>
         </ol>
       </div>
-      <div id="pbi-ocr-zone" style="border:2px dashed rgba(26,46,90,0.25); border-radius:14px; padding:24px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
+      <div id="pbi-ocr-zone" style="border:2px dashed rgba(63,77,99,0.25); border-radius:14px; padding:24px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
         <div style="font-size:32px; margin-bottom:6px;">📷</div>
-        <div style="font-size:13px; font-weight:600; color:#1A2E5A;">Pega tu captura aquí (Ctrl+V)</div>
+        <div style="font-size:13px; font-weight:600; color:#3F4D63;">Pega tu captura aquí (Ctrl+V)</div>
         <div style="font-size:11px; color:#888780; margin-top:4px;">o haz clic para seleccionar una imagen</div>
       </div>
       <input type="file" id="pbi-ocr-file" accept="image/*" style="display:none">
       <canvas id="pbi-ocr-canvas" style="display:none; max-width:100%; border-radius:10px; margin-top:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);"></canvas>
-      <div id="pbi-ocr-progress" style="display:none; margin-top:10px; padding:10px 14px; background:#EEF1F8; border-radius:10px; font-size:13px; color:#1A2E5A; text-align:center;"></div>
+      <div id="pbi-ocr-progress" style="display:none; margin-top:10px; padding:10px 14px; background:#EEEFF2; border-radius:10px; font-size:13px; color:#3F4D63; text-align:center;"></div>
     </div>
 
     <!-- Panel: Pegar texto -->
@@ -3376,8 +3376,8 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
           <li>Pega abajo con <strong>Ctrl+V</strong></li>
         </ol>
       </div>
-      <textarea id="pbi-paste-area" placeholder="Haz clic aquí y presiona Ctrl+V — los datos se procesarán automáticamente..." style="width:100%; height:110px; border-radius:10px; border:1.5px dashed rgba(26,46,90,0.3); padding:10px 12px; font:inherit; font-size:12px; font-family:monospace; resize:vertical; background:white; box-sizing:border-box;"></textarea>
-      <button class="btn" id="pbi-parse-paste" style="width:100%; margin-top:8px; font-size:12px; color:#5F5E5A;">Procesar manualmente</button>
+      <textarea id="pbi-paste-area" placeholder="Haz clic aquí y presiona Ctrl+V — los datos se procesarán automáticamente..." style="width:100%; height:110px; border-radius:10px; border:1.5px dashed rgba(63,77,99,0.3); padding:10px 12px; font:inherit; font-size:12px; font-family:monospace; resize:vertical; background:white; box-sizing:border-box;"></textarea>
+      <button class="btn" id="pbi-parse-paste" style="width:100%; margin-top:8px; font-size:12px; color:#6B7280;">Procesar manualmente</button>
     </div>
 
     <!-- Panel: Archivo -->
@@ -3403,7 +3403,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
 
     <div class="pbi-mapper" id="pbi-mapper">
       <p class="pbi-mapper-title">Mapeo de columnas</p>
-      <p style="font-size:12px; color:#5F5E5A; margin-bottom:12px;">Indica qué columna de tu CSV corresponde a cada campo. Las columnas con <strong>fondo verde</strong> fueron detectadas automáticamente.</p>
+      <p style="font-size:12px; color:#6B7280; margin-bottom:12px;">Indica qué columna de tu CSV corresponde a cada campo. Las columnas con <strong>fondo verde</strong> fueron detectadas automáticamente.</p>
 
       <div class="pbi-map-row"><label>Nombre del asesor *</label>
         <select id="pbi-col-name"></select></div>
@@ -3451,7 +3451,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
   var ocrCanvas   = document.getElementById('pbi-ocr-canvas');
   var ocrProgress = document.getElementById('pbi-ocr-progress');
 
-  var ACTIVE_STYLE   = 'flex:1;font-size:11px;background:linear-gradient(145deg,#213e7a,#111f46);color:white;';
+  var ACTIVE_STYLE   = 'flex:1;font-size:11px;background:linear-gradient(145deg,#4A586E,#2C3645);color:white;';
   var INACTIVE_STYLE = 'flex:1;font-size:11px;';
 
   function switchTab(tab) {
@@ -3519,7 +3519,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
   ocrFile.addEventListener('change', function(e) {
     if (e.target.files[0]) processOCRImage(e.target.files[0]);
   });
-  ocrZone.addEventListener('dragover', function(e) { e.preventDefault(); ocrZone.style.borderColor='#1A2E5A'; });
+  ocrZone.addEventListener('dragover', function(e) { e.preventDefault(); ocrZone.style.borderColor='#3F4D63'; });
   ocrZone.addEventListener('dragleave', function() { ocrZone.style.borderColor=''; });
   ocrZone.addEventListener('drop', function(e) {
     e.preventDefault(); ocrZone.style.borderColor='';
@@ -3629,7 +3629,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
         if (d.y > canvas.height) d.y = 0;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(26,46,90,${d.a})`;
+        ctx.fillStyle = `rgba(63,77,99,${d.a})`;
         ctx.fill();
       });
       for (let i = 0; i < dots.length; i++) {
@@ -3640,7 +3640,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
             ctx.beginPath();
             ctx.moveTo(dots[i].x, dots[i].y);
             ctx.lineTo(dots[j].x, dots[j].y);
-            ctx.strokeStyle = `rgba(26,46,90,${0.06 * (1 - dist / 110)})`;
+            ctx.strokeStyle = `rgba(63,77,99,${0.06 * (1 - dist / 110)})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
