@@ -654,8 +654,6 @@
   <button onclick="exitPresentMode()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;padding:6px 14px;border-radius:6px;cursor:pointer;font:inherit;font-size:12px;">✕ Salir</button>
 </div>
 
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2939,6 +2937,9 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     _xlsxState.weeks         = kpis ? kpis.weeks : [];
     _xlsxState.selectedWeek  = selectedWeek || null;
     _xlsxState.commissions   = comisiones;
+
+    // Tráfico actual del periodo: semana seleccionada o total del mes
+    if (kpis) state.trafficActual = Math.round(Number(kpis.trafico) || 0);
 
     if (monthly.length > 0) {
       state.advisors = monthly.map(function(a) {
