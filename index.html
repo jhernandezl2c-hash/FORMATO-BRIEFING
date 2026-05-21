@@ -3213,7 +3213,11 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     showLinkStatus('Descargando…', 'ok');
     try {
       var res = await fetch(fetchUrl);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) {
+        var detalle = '';
+        try { detalle = (await res.text()).trim(); } catch (e) {}
+        throw new Error(detalle || ('HTTP ' + res.status));
+      }
       var buf = await res.arrayBuffer();
       var wb = XLSX.read(buf, { type: 'array' });
       _wb = wb;
@@ -3222,7 +3226,7 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
       showLinkStatus('✓ Excel cargado — ' + wkCount + ' semana' + (wkCount !== 1 ? 's' : '') + ' detectada' + (wkCount !== 1 ? 's' : ''), 'ok');
       setTimeout(closeXlsxModal, 1000);
     } catch (err) {
-      showLinkStatus('Error: ' + err.message + '. Revisa el link de SharePoint o que el Worker esté activo.', 'err');
+      showLinkStatus('Error: ' + err.message, 'err');
       console.warn('SharePoint fetch error:', err);
     }
   }

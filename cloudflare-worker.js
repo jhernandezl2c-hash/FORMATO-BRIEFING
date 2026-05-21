@@ -1,12 +1,9 @@
 /**
  * Proxy CORS para descargar el Excel RDV desde SharePoint.
  *
- * Cómo desplegarlo:
- *  1. Entra a dash.cloudflare.com  →  Workers & Pages  →  Create  →  Create Worker
- *  2. Ponle un nombre (ej: thsa-excel-proxy)  →  Deploy
- *  3. Click en "Edit code", borra todo y pega ESTE archivo completo  →  Deploy
- *  4. Copia la URL que te queda (ej: https://thsa-excel-proxy.TUUSUARIO.workers.dev)
- *  5. Pega esa URL en el briefing, en "Cargar desde link"  →  campo "URL del Worker"
+ * Cómo desplegarlo / actualizarlo:
+ *  1. Entra a dash.cloudflare.com  →  Workers & Pages  →  abre "thsa-excel-proxy"
+ *  2. Click en "Edit code", borra TODO y pega este archivo completo  →  Deploy
  *
  * Uso:  https://tu-worker.workers.dev/?url=<URL_DE_SHAREPOINT>
  */
@@ -32,16 +29,41 @@ export default {
     try {
       // Los links "Anyone" de SharePoint / OneDrive necesitan download=1 para dar el archivo crudo
       let dl = target;
-      if (dl.includes('sharepoint.com') || dl.includes('1drv.ms') || dl.includes('-my.sharepoint')) {
+      const esSharePoint = dl.includes('sharepoint.com') || dl.includes('1drv.ms');
+      if (esSharePoint && !/[?&]download=1/.test(dl)) {
         dl += (dl.includes('?') ? '&' : '?') + 'download=1';
       }
 
-      const resp = await fetch(dl, { redirect: 'follow' });
+      const resp = await fetch(dl, {
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          'Accept': '*/*',
+        },
+      });
+
       if (!resp.ok) {
-        return new Response('Error al descargar: HTTP ' + resp.status, { status: 502, headers: cors });
+        const body = await resp.text().catch(() => '');
+        return new Response(
+          'SharePoint respondio HTTP ' + resp.status + '. ' + body.slice(0, 400),
+          { status: 502, headers: cors }
+        );
       }
 
+      const ct = resp.headers.get('content-type') || '';
       const buf = await resp.arrayBuffer();
+
+      // Si devolvio HTML en vez del archivo, casi seguro es una pagina de login:
+      // el link no es publico ("Cualquier persona con el vinculo").
+      if (ct.includes('text/html')) {
+        return new Response(
+          'El link no devolvio un archivo Excel sino una pagina web. ' +
+          'Probablemente pide iniciar sesion. En SharePoint usa Compartir y elige ' +
+          '"Cualquier persona con el vinculo" (sin requerir inicio de sesion).',
+          { status: 502, headers: cors }
+        );
+      }
+
       return new Response(buf, {
         headers: {
           ...cors,
@@ -50,7 +72,7 @@ export default {
         },
       });
     } catch (e) {
-      return new Response('Error: ' + e.message, { status: 500, headers: cors });
+      return new Response('Error en el Worker: ' + e.message, { status: 500, headers: cors });
     }
   },
 };
