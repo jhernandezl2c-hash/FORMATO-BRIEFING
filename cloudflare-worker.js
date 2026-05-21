@@ -8,6 +8,26 @@
  * Uso:  https://tu-worker.workers.dev/?url=<URL_DE_SHAREPOINT>
  */
 
+// Convierte un link "Compartir" de SharePoint a su URL de descarga directa.
+// Ej: https://host/:x:/g/personal/USER/TOKEN
+//  →  https://host/personal/USER/_layouts/15/download.aspx?share=TOKEN
+function toDownloadUrl(shareUrl) {
+  try {
+    const u = new URL(shareUrl);
+    // OneDrive personal:  /:x:/g/personal/{user}/{token}
+    const mp = u.pathname.match(/\/:[a-z]:\/[a-z]\/personal\/([^/]+)\/([^/?]+)/i);
+    if (mp) {
+      return u.origin + '/personal/' + mp[1] + '/_layouts/15/download.aspx?share=' + mp[2];
+    }
+    // Sitios de SharePoint:  /:x:/s/{site}/{token}
+    const ms = u.pathname.match(/\/:[a-z]:\/[a-z]\/(sites\/[^/]+)\/([^/?]+)/i);
+    if (ms) {
+      return u.origin + '/' + ms[1] + '/_layouts/15/download.aspx?share=' + ms[2];
+    }
+  } catch (e) { /* link no parseable */ }
+  return null;
+}
+
 export default {
   async fetch(request) {
     const cors = {
@@ -27,11 +47,14 @@ export default {
     }
 
     try {
-      // Los links "Anyone" de SharePoint / OneDrive necesitan download=1 para dar el archivo crudo
-      let dl = target;
-      const esSharePoint = dl.includes('sharepoint.com') || dl.includes('1drv.ms');
-      if (esSharePoint && !/[?&]download=1/.test(dl)) {
-        dl += (dl.includes('?') ? '&' : '?') + 'download=1';
+      // 1) Si es un link "Compartir" de SharePoint, convertirlo a descarga directa.
+      // 2) Si no, intentar con download=1 (OneDrive personal, 1drv.ms).
+      let dl = toDownloadUrl(target);
+      if (!dl) {
+        dl = target;
+        if ((dl.includes('sharepoint.com') || dl.includes('1drv.ms')) && !/[?&]download=1/.test(dl)) {
+          dl += (dl.includes('?') ? '&' : '?') + 'download=1';
+        }
       }
 
       const resp = await fetch(dl, {
