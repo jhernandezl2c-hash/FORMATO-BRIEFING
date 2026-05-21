@@ -2839,6 +2839,49 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
     return result;
   }
 
+  // Ventas de tienda agrupadas por día de la semana para el periodo seleccionado.
+  // Mes completo: suma TODOS los domingos, lunes, etc.
+  // Semana X: los 7 días de esa semana.
+  function parseDaySales(wb, selectedWeek) {
+    var ws = wb.Sheets['Diario de ventas'];
+    if (!ws) return [0,0,0,0,0,0,0];
+    var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    var idRow = rows[6] || [];
+    // Columnas de inicio de cada asesor
+    var advisorCols = [];
+    for (var col = 3; col < idRow.length; col++) {
+      if (typeof idRow[col] === 'number' && idRow[col] > 10000) advisorCols.push(col);
+    }
+    var DAY_ORDER = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
+    // Seleccionar filas del periodo
+    var weekRows = [];
+    if (selectedWeek) {
+      var start = -1;
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i][0] === selectedWeek) { start = i; break; }
+      }
+      if (start !== -1) {
+        var end = rows.length;
+        for (var j = start + 1; j < rows.length; j++) {
+          if (rows[j][0] && String(rows[j][0]).startsWith('Semana')) { end = j; break; }
+        }
+        weekRows = rows.slice(start, end).filter(function(r) { return DAY_ORDER.indexOf(r[1]) !== -1; });
+      }
+    } else {
+      weekRows = rows.slice(9).filter(function(r) { return DAY_ORDER.indexOf(r[1]) !== -1; });
+    }
+    // Acumular venta de tienda por día de semana
+    var daySales = [0,0,0,0,0,0,0];
+    weekRows.forEach(function(r) {
+      var dayIdx = DAY_ORDER.indexOf(r[1]);
+      if (dayIdx === -1) return;
+      var dayTotal = 0;
+      advisorCols.forEach(function(c) { dayTotal += Number(r[c + 1]) || 0; });
+      daySales[dayIdx] += dayTotal;
+    });
+    return daySales.map(function(v) { return roundPeso(v); });
+  }
+
   function parseComisiones(wb) {
     var ws = wb.Sheets['COMISIONES'];
     if (!ws) return [];
@@ -2932,6 +2975,9 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
       });
       state = normalizeDerivedFields(state);
     }
+
+    // Ventas por día según el periodo seleccionado
+    state.daySales = parseDaySales(wb, selectedWeek);
 
     renderAll();
     renderComisiones(comisiones, kpis);
