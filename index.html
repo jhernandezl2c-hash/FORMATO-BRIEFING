@@ -235,6 +235,129 @@
     .briefing-focus { grid-column: 1 / -1; text-align: left; min-width: 0; }
   }
 
+  /* ── Selector de semana (Excel) ── */
+  .week-bar {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(26,46,90,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+  }
+  .week-bar-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+  .week-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: white;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+  }
+  .week-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  @media (hover: hover) and (pointer: fine) {
+    .week-btn:not(.active):hover { border-color: var(--accent); color: var(--accent); }
+  }
+  .week-bar-info { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  /* ── Sección de comisiones ── */
+  .comision-store-banner {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .comision-store-kpi { text-align: center; }
+  .comision-store-kpi .val { font-size: 24px; font-weight: 700; color: var(--c-brand); font-variant-numeric: tabular-nums; }
+  .comision-store-kpi .lbl { font-size: 11px; color: var(--muted); }
+  .comision-tier-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .comision-progress-wrap { flex: 1; min-width: 140px; }
+  .comision-progress { height: 6px; background: var(--border-s, #E8E6E0); border-radius: 6px; overflow: hidden; }
+  .comision-progress-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #E24B4A 0%, #EF9F27 50%, #639922 87%);
+    width: 0;
+    transition: width 1.2s cubic-bezier(0.23,1,0.32,1);
+  }
+  .comision-tier-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .comision-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+    gap: 14px;
+  }
+  .comision-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 18px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .comision-card-tier {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .tier-low  { background: var(--c-red-bg);   color: var(--c-red-deep);   }
+  .tier-mid  { background: var(--c-amber-bg); color: var(--c-amber-deep); }
+  .tier-high { background: var(--c-green-bg); color: var(--c-green-fg);   }
+  .comision-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding-right: 60px; }
+  .comision-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--accent); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; flex-shrink: 0;
+  }
+  .comision-name { font-weight: 600; font-size: 14px; line-height: 1.2; }
+  .comision-role-label { font-size: 11px; color: var(--muted); }
+  .comision-total-wrap { margin-bottom: 12px; }
+  .comision-total { font-size: 30px; font-weight: 700; color: var(--c-brand); font-variant-numeric: tabular-nums; line-height: 1; }
+  .comision-total-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .comision-breakdown {
+    border-top: 1px solid var(--border-s, #EDE9E3);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .com-row { display: flex; justify-content: space-between; font-size: 12px; }
+  .com-row .lbl { color: var(--muted); }
+  .com-row .val { font-variant-numeric: tabular-nums; }
+  .com-row .val-pos { color: #639922; }
+  .com-row .val-neg { color: #E24B4A; }
+
   /* ── Celebraciones ── */
   .celeb-badge {
     position: fixed; pointer-events: none; z-index: 490;
@@ -255,6 +378,7 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   /* El header entra con CSS para no depender de GSAP */
   @keyframes _headerIn {
@@ -393,9 +517,12 @@
       <button class="btn" id="btn-export" title="Descargar JSON con los datos actuales">↓ Exportar</button>
       <button class="btn" id="btn-import" title="Cargar un archivo JSON">↑ Importar</button>
       <button class="btn btn-primary" id="btn-pbi" title="Importar CSV exportado de Power BI" style="font-size:11px;">⬆ Power BI</button>
+      <button class="btn" id="btn-xlsx" title="Cargar el Excel RDV de ventas (.xlsx)" style="font-size:11px; background:#17653a; color:white; border-color:#17653a;">⬆ Excel RDV</button>
       <button class="btn btn-danger" id="btn-reset" title="Volver a los valores por defecto">↺ Reiniciar</button>
     </div>
   </div>
+  <input type="file" id="xlsx-file-input" accept=".xlsx,.xls,.xlsm" style="display:none">
+  <div class="week-bar" id="xlsx-week-bar"></div>
 
   <div class="surface">
     <h2 style="margin-bottom: 4px;">Resultado de tienda</h2>
@@ -514,6 +641,8 @@
 
     <div class="day-summary" id="day-summary"></div>
   </div>
+
+  <div class="surface" id="section-comisiones" style="display:none;"></div>
 
   <p class="footer">Datos guardados en este navegador · <span id="last-saved"></span> · <span id="pbi-sync-status" style="font-weight:500;"></span></p>
 </div>
@@ -2584,6 +2713,425 @@ document.getElementById('btn-reset-projection').addEventListener('click', onRese
 (function () {
   if (typeof gsap === 'undefined') return;
   gsap.set('.page', { perspective: 1400 });
+})();
+
+// ===== EXCEL RDV IMPORT =====
+(function () {
+  var _wb = null;  // workbook en memoria
+  var _xlsxState = { weeks: [], selectedWeek: null, commissions: [] };
+
+  // ─── Parsers ────────────────────────────────────────────────────────────────
+
+  function parseKPIsGenerales(wb, selectedWeek) {
+    var ws = wb.Sheets['KPIs Generales PDV'];
+    if (!ws) return null;
+    var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    var hdr = rows[2] || [];
+    var weeks = hdr.filter(function(h) { return typeof h === 'string' && /Semana \d+/.test(h); });
+    var col = 1; // default: mes completo (columna "MAYO" / nombre mes)
+    if (selectedWeek) {
+      var idx = hdr.indexOf(selectedWeek);
+      if (idx !== -1) col = idx;
+    }
+    return {
+      weeks: weeks,
+      meta:     rows[3]  && rows[3][col]  || 0,
+      minimo:   rows[4]  && rows[4][col]  || 0,
+      venta:    rows[5]  && rows[5][col]  || 0,
+      arrastre: rows[7]  && rows[7][col]  || 0,
+      alcance:  rows[8]  && rows[8][col]  || 0,
+      tx:       rows[9]  && rows[9][col]  || 0,
+      unidades: rows[10] && rows[10][col] || 0,
+      trafico:  rows[11] && rows[11][col] || 0,
+      ept:      rows[12] && rows[12][col] || 0,
+      upt:      rows[13] && rows[13][col] || 0,
+      aur:      rows[14] && rows[14][col] || 0,
+      conv:     rows[15] && rows[15][col] || 0,
+    };
+  }
+
+  function parseKPIsColaborador(wb) {
+    var ws = wb.Sheets['KPIs x Colaborador'];
+    if (!ws) return [];
+    var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    var advisors = [];
+    for (var i = 3; i < rows.length; i++) {
+      var r = rows[i];
+      var empId = r[1];
+      var name  = r[2];
+      if (!empId || typeof empId !== 'number' || empId < 1000) continue;
+      if (!name  || typeof name  !== 'string' || name.trim().length < 2) continue;
+      advisors.push({
+        role:        String(r[0] || ''),
+        empId:       empId,
+        name:        name.trim(),
+        meta:        Number(r[3])  || 0,
+        minimo:      Number(r[4])  || 0,
+        venta:       Number(r[5])  || 0,
+        alcance:     Number(r[6])  || 0,
+        arrastre:    Number(r[7])  || 0,
+        tx:          Number(r[8])  || 0,
+        unidades:    Number(r[9])  || 0,
+        ept:         Number(r[10]) || 0,
+        upt:         Number(r[11]) || 0,
+        aur:         Number(r[12]) || 0,
+        crmTx:       Number(r[13]) || 0,
+        crmObjetivo: Number(r[14]) || 0,
+      });
+    }
+    return advisors;
+  }
+
+  function parseDiarioVentas(wb, selectedWeek) {
+    var ws = wb.Sheets['Diario de ventas'];
+    if (!ws) return {};
+    var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    var idRow   = rows[6] || [];
+    var nameRow = rows[7] || [];
+    // Detectar columna inicial de cada asesor (donde aparece un ID numérico real)
+    var advisorCols = [];
+    for (var col = 3; col < idRow.length; col++) {
+      if (typeof idRow[col] === 'number' && idRow[col] > 10000) {
+        advisorCols.push({ col: col, empId: idRow[col], name: String(nameRow[col] || '').trim() });
+      }
+    }
+    // Filas de la semana seleccionada
+    var dayLabels = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
+    var weekRows = [];
+    if (selectedWeek) {
+      var start = -1;
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i][0] === selectedWeek) { start = i; break; }
+      }
+      if (start !== -1) {
+        var end = rows.length;
+        for (var j = start + 1; j < rows.length; j++) {
+          if (rows[j][0] && String(rows[j][0]).startsWith('Semana')) { end = j; break; }
+        }
+        weekRows = rows.slice(start, end).filter(function(r) { return dayLabels.indexOf(r[1]) !== -1; });
+      }
+    } else {
+      weekRows = rows.slice(9).filter(function(r) { return dayLabels.indexOf(r[1]) !== -1; });
+    }
+    // Acumular por asesor
+    var result = {};
+    advisorCols.forEach(function(ac) {
+      var venta = 0, tx = 0, unidades = 0, crmTx = 0;
+      weekRows.forEach(function(r) {
+        venta    += Number(r[ac.col + 1]) || 0;
+        tx       += Number(r[ac.col + 2]) || 0;
+        unidades += Number(r[ac.col + 3]) || 0;
+        crmTx    += Number(r[ac.col + 4]) || 0;
+      });
+      result[ac.empId] = { venta: venta, tx: tx, unidades: unidades, crmTx: crmTx };
+    });
+    return result;
+  }
+
+  function parseComisiones(wb) {
+    var ws = wb.Sheets['COMISIONES'];
+    if (!ws) return [];
+    var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    var list = [];
+    for (var i = 3; i < rows.length; i++) {
+      var r = rows[i];
+      var empId = r[7];
+      var name  = r[8];
+      if (!empId || typeof empId !== 'number' || empId < 1000) continue;
+      if (!name  || typeof name  !== 'string' || name.trim().length < 2) continue;
+      list.push({
+        role:           String(r[3] || ''),
+        empId:          empId,
+        name:           name.trim(),
+        rateBelow:      Number(r[4]) || 0,
+        rateMid:        Number(r[5]) || 0,
+        rateAbove:      Number(r[6]) || 0,
+        meta:           Number(r[9])  || 0,
+        minimo:         Number(r[10]) || 0,
+        venta:          Number(r[11]) || 0,
+        dev:            Number(r[12]) || 0,
+        pasilloInf:     Number(r[13]) || 0,
+        alcance:        Number(r[14]) || 0,
+        comisionBase:   Number(r[15]) || 0,
+        pctComision:    Number(r[16]) || 0,
+        shipFromStore:  Number(r[17]) || 0,
+        bonoOmnicanal:  Number(r[18]) || 0,
+        primaDom:       Number(r[19]) || 0,
+        diasFestivos:   Number(r[20]) || 0,
+        retardo:        Number(r[21]) || 0,
+        extra:          Number(r[22]) || 0,
+        descuentos:     Number(r[23]) || 0,
+        totalPagar:     Number(r[24]) || 0,
+      });
+    }
+    return list;
+  }
+
+  // ─── Aplicar Excel al estado ─────────────────────────────────────────────────
+
+  var ROLE_MAP = {
+    'GERENTE': 'Gerente',
+    'SUBGERENTE 1': 'Subgerente', 'SUBGERENTE 2': 'Subgerente',
+    'VENDEDOR 1': 'Vendedor', 'VENDEDOR 2': 'Vendedor', 'VENDEDOR 3': 'Vendedor',
+    'VENDEDOR 4': 'Vendedor', 'VENDEDOR 5': 'Vendedor', 'VENDEDOR 6': 'Vendedor',
+    'VENDEDOR 7': 'Vendedor', 'VENDEDOR 8': 'Vendedor', 'VENDEDOR 9': 'Vendedor',
+    'ALMACENISTA 1': 'Almacenista', 'ALMACENISTA 2': 'Almacenista', 'ALMACENISTA 3': 'Almacenista',
+  };
+
+  function applyExcel(wb, selectedWeek) {
+    var kpis   = parseKPIsGenerales(wb, selectedWeek);
+    var monthly = parseKPIsColaborador(wb);
+    var weekly  = selectedWeek ? parseDiarioVentas(wb, selectedWeek) : null;
+    var comisiones = parseComisiones(wb);
+
+    _xlsxState.weeks         = kpis ? kpis.weeks : [];
+    _xlsxState.selectedWeek  = selectedWeek || null;
+    _xlsxState.commissions   = comisiones;
+
+    if (monthly.length > 0) {
+      state.advisors = monthly.map(function(a) {
+        var w   = weekly ? (weekly[a.empId] || {}) : null;
+        var existing = state.advisors.find(function(e) {
+          return String(e.empId) === String(a.empId) ||
+                 e.name.trim().toLowerCase() === a.name.toLowerCase();
+        });
+        return {
+          id:          String(a.empId),
+          empId:       a.empId,
+          name:        a.name,
+          role:        ROLE_MAP[a.role] || 'Vendedor',
+          meta:        a.meta,
+          min:         a.meta / 1.15,
+          sales:       w ? w.venta    : a.venta,
+          tx:          w ? w.tx       : a.tx,
+          units:       w ? w.unidades : a.unidades,
+          traffic:     existing ? (existing.traffic    || 0) : 0,
+          note:        existing ? (existing.note        || '') : '',
+          prevSales:   existing ? (existing.prevSales   || 0) : 0,
+          prevTicket:  existing ? (existing.prevTicket  || 0) : 0,
+          prevUpt:     existing ? (existing.prevUpt     || 0) : 0,
+          eticket:     existing ? (existing.eticket     || 0) : 0,
+          eticketMeta: existing ? (existing.eticketMeta || 0) : 0,
+          prevEticket: existing ? (existing.prevEticket || 0) : 0,
+        };
+      });
+      state = normalizeDerivedFields(state);
+    }
+
+    renderAll();
+    renderComisiones(comisiones, kpis);
+    renderWeekBar();
+    saveState();
+  }
+
+  // ─── Selector de semana ──────────────────────────────────────────────────────
+
+  function renderWeekBar() {
+    var bar = document.getElementById('xlsx-week-bar');
+    if (!bar) return;
+    if (_xlsxState.weeks.length === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    var sw = _xlsxState.selectedWeek;
+    var html = '<span class="week-bar-label">Semana del briefing:</span>';
+    html += '<button class="week-btn' + (!sw ? ' active' : '') + '" data-week="">Mes completo</button>';
+    _xlsxState.weeks.forEach(function(w) {
+      html += '<button class="week-btn' + (sw === w ? ' active' : '') + '" data-week="' + w + '">' + w + '</button>';
+    });
+    html += '<span class="week-bar-info">Excel cargado &middot; selecciona el periodo</span>';
+    bar.innerHTML = html;
+    bar.querySelectorAll('.week-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        _xlsxState.selectedWeek = btn.dataset.week || null;
+        if (_wb) applyExcel(_wb, _xlsxState.selectedWeek);
+      });
+    });
+  }
+
+  // ─── Sección de comisiones ───────────────────────────────────────────────────
+
+  function getInitials(name) {
+    var parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function tierInfo(alcancePct) {
+    if (alcancePct >= 115) return { cls: 'tier-high', lbl: '≥ 115%' };
+    if (alcancePct >= 100) return { cls: 'tier-mid',  lbl: '100–115%' };
+    return                        { cls: 'tier-low',  lbl: '< 100%' };
+  }
+
+  function renderComisiones(comisiones, kpis) {
+    var section = document.getElementById('section-comisiones');
+    if (!section) return;
+    if (!comisiones || comisiones.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+
+    var alcancePct  = kpis ? (Number(kpis.alcance) * 100) : 0;
+    var storeVenta  = kpis ? Number(kpis.venta)    : 0;
+    var tier        = tierInfo(alcancePct);
+
+    // Banner de tienda
+    var bannerHtml = '<div class="comision-store-banner">' +
+      '<div class="comision-store-kpi"><div class="val" id="com-venta-anim">$0</div><div class="lbl">Venta tienda</div></div>' +
+      '<div class="comision-store-kpi"><div class="val" id="com-alc-anim">0%</div><div class="lbl">Alcance tienda</div></div>' +
+      '<span class="comision-tier-badge ' + tier.cls + '">' + tier.lbl + '</span>' +
+      '<div class="comision-progress-wrap">' +
+        '<div class="comision-progress"><div class="comision-progress-fill" id="com-prog-fill"></div></div>' +
+        '<div class="comision-tier-labels"><span>0%</span><span>100%</span><span>115%</span></div>' +
+      '</div>' +
+    '</div>';
+
+    // Cards de asesores
+    var cardsHtml = comisiones.map(function(c) {
+      var t    = tierInfo(alcancePct);
+      var bonos = c.shipFromStore + c.bonoOmnicanal + c.primaDom + c.diasFestivos + c.extra;
+      var desc  = c.retardo + c.descuentos;
+      var breakdownRows = '<div class="com-row"><span class="lbl">Comisión base</span><span class="val">' + fmtMXN(c.comisionBase) + '</span></div>' +
+        '<div class="com-row"><span class="lbl">Tasa aplicada</span><span class="val">' + (c.pctComision * 100).toFixed(2) + '%</span></div>';
+      if (bonos > 0) breakdownRows += '<div class="com-row"><span class="lbl">Bonos</span><span class="val val-pos">+' + fmtMXN(bonos) + '</span></div>';
+      if (desc  > 0) breakdownRows += '<div class="com-row"><span class="lbl">Descuentos / retardos</span><span class="val val-neg">-' + fmtMXN(desc) + '</span></div>';
+
+      return '<div class="comision-card">' +
+        '<span class="comision-card-tier ' + t.cls + '">' + t.lbl + '</span>' +
+        '<div class="comision-card-header">' +
+          '<div class="comision-avatar">' + getInitials(c.name) + '</div>' +
+          '<div><div class="comision-name">' + c.name + '</div><div class="comision-role-label">' + c.role + '</div></div>' +
+        '</div>' +
+        '<div class="comision-total-wrap">' +
+          '<div class="comision-total" data-com-target="' + c.totalPagar.toFixed(2) + '">$0</div>' +
+          '<div class="comision-total-sub">Total a pagar estimado</div>' +
+        '</div>' +
+        '<div class="comision-breakdown">' + breakdownRows + '</div>' +
+      '</div>';
+    }).join('');
+
+    section.innerHTML =
+      '<h2 style="margin-bottom:4px;">Estimación de comisiones</h2>' +
+      '<p style="font-size:13px;color:#5F5E5A;margin-bottom:14px;">Calculadas con base en el alcance de tienda al cierre del periodo. Tasa aplicada según el nivel alcanzado.</p>' +
+      bannerHtml +
+      '<div class="comision-grid">' + cardsHtml + '</div>';
+
+    // ─── Animaciones GSAP ───
+    requestAnimationFrame(function() {
+      if (typeof gsap === 'undefined') {
+        // Fallback sin GSAP
+        var vEl = document.getElementById('com-venta-anim');
+        var aEl = document.getElementById('com-alc-anim');
+        var fEl = document.getElementById('com-prog-fill');
+        if (vEl) vEl.textContent = fmtMXN(storeVenta);
+        if (aEl) aEl.textContent = alcancePct.toFixed(1) + '%';
+        if (fEl) fEl.style.width = Math.min(alcancePct / 115 * 100, 100) + '%';
+        section.querySelectorAll('[data-com-target]').forEach(function(el) {
+          el.textContent = fmtMXN(parseFloat(el.dataset.comTarget) || 0);
+        });
+        return;
+      }
+
+      // Animar banner de tienda
+      var storeObj = { venta: 0, alc: 0 };
+      gsap.to(storeObj, {
+        venta: storeVenta,
+        alc:   alcancePct,
+        duration: 1.4,
+        ease: 'power2.out',
+        onUpdate: function() {
+          var vEl = document.getElementById('com-venta-anim');
+          var aEl = document.getElementById('com-alc-anim');
+          var fEl = document.getElementById('com-prog-fill');
+          if (vEl) vEl.textContent = '$' + Math.round(storeObj.venta).toLocaleString('en-US');
+          if (aEl) aEl.textContent = storeObj.alc.toFixed(1) + '%';
+          if (fEl) fEl.style.width = Math.min(storeObj.alc / 115 * 100, 100) + '%';
+        }
+      });
+
+      // Animar cada tarjeta
+      section.querySelectorAll('[data-com-target]').forEach(function(el, i) {
+        var target = parseFloat(el.dataset.comTarget) || 0;
+        var obj = { val: 0 };
+        gsap.to(obj, {
+          val: target,
+          duration: 1.4,
+          delay: 0.1 + i * 0.12,
+          ease: 'power2.out',
+          onUpdate: function() {
+            el.textContent = '$' + Math.round(obj.val).toLocaleString('en-US');
+          }
+        });
+      });
+    });
+  }
+
+  // ─── Manejo de archivo ────────────────────────────────────────────────────────
+
+  function handleFile(file) {
+    if (typeof XLSX === 'undefined') { showToast('Cargando librería, intenta de nuevo.'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var wb = XLSX.read(e.target.result, { type: 'array' });
+        _wb = wb;
+        applyExcel(wb, null);
+        var wkCount = _xlsxState.weeks.length;
+        showToast('Excel cargado — ' + wkCount + ' semana' + (wkCount !== 1 ? 's' : '') + ' detectada' + (wkCount !== 1 ? 's' : ''));
+      } catch (err) {
+        showToast('Error al leer el Excel: ' + err.message);
+        console.error('XLSX parse error:', err);
+      }
+    };
+    reader.onerror = function() { showToast('No se pudo leer el archivo.'); };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // Carga desde URL de SharePoint (Anyone link)
+  async function loadFromURL(url) {
+    if (!url) return;
+    if (typeof XLSX === 'undefined') { showToast('Librería no lista, espera un momento.'); return; }
+    var dlUrl = (url.includes('sharepoint.com') || url.includes('1drv.ms'))
+      ? (url.includes('?') ? url + '&download=1' : url + '?download=1')
+      : url;
+    showToast('Descargando desde SharePoint…');
+    try {
+      var res = await fetch(dlUrl);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var buf = await res.arrayBuffer();
+      var wb = XLSX.read(buf, { type: 'array' });
+      _wb = wb;
+      applyExcel(wb, _xlsxState.selectedWeek);
+      showToast('Excel de SharePoint cargado ✓');
+    } catch (err) {
+      showToast('CORS bloqueado — arrastra el archivo directamente.');
+      console.warn('SharePoint fetch error:', err);
+    }
+  }
+  window.xlsxLoadFromURL = loadFromURL;
+
+  // ─── Listeners ────────────────────────────────────────────────────────────────
+
+  document.getElementById('btn-xlsx').addEventListener('click', function() {
+    document.getElementById('xlsx-file-input').click();
+  });
+
+  document.getElementById('xlsx-file-input').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) handleFile(file);
+    e.target.value = '';
+  });
+
+  // Drag-and-drop en cualquier parte de la página
+  document.addEventListener('dragover', function(e) {
+    if (e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) {
+      e.preventDefault();
+    }
+  });
+  document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    var files = Array.prototype.slice.call(e.dataTransfer.files);
+    var xlsFile = files.find(function(f) { return /\.(xlsx|xls|xlsm)$/i.test(f.name); });
+    if (xlsFile) handleFile(xlsFile);
+  });
+
 })();
 
 </script>
