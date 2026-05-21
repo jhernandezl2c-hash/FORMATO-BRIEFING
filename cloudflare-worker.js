@@ -1,25 +1,26 @@
 /**
- * Proxy CORS para descargar el Excel RDV desde SharePoint.
+ * Worker del briefing TH:
+ *   1. Proxy CORS para descargar el Excel RDV desde SharePoint.
+ *   2. Verificación de la contraseña de acceso (endpoint /auth).
  *
  * Cómo desplegarlo / actualizarlo:
- *  1. Entra a dash.cloudflare.com  →  Workers & Pages  →  abre "thsa-excel-proxy"
- *  2. Click en "Edit code", borra TODO y pega este archivo completo  →  Deploy
+ *   1. dash.cloudflare.com  →  Workers & Pages  →  abre "thsa-excel-proxy"
+ *   2. Edit code  →  borra TODO  →  pega este archivo  →  Deploy
  *
- * Uso:  https://tu-worker.workers.dev/?url=<URL_DE_SHAREPOINT>
+ * IMPORTANTE — define la contraseña (una sola vez):
+ *   En el Worker  →  Settings  →  Variables and Secrets  →  Add
+ *   Type: Secret · Name: BRIEFING_PASSWORD · Value: la contraseña que tú elijas
+ *   →  Deploy. La contraseña queda solo aquí, nunca en el index.html.
  */
 
 // Convierte un link "Compartir" de SharePoint a su URL de descarga directa.
-// Ej: https://host/:x:/g/personal/USER/TOKEN
-//  →  https://host/personal/USER/_layouts/15/download.aspx?share=TOKEN
 function toDownloadUrl(shareUrl) {
   try {
     const u = new URL(shareUrl);
-    // OneDrive personal:  /:x:/g/personal/{user}/{token}
     const mp = u.pathname.match(/\/:[a-z]:\/[a-z]\/personal\/([^/]+)\/([^/?]+)/i);
     if (mp) {
       return u.origin + '/personal/' + mp[1] + '/_layouts/15/download.aspx?share=' + mp[2];
     }
-    // Sitios de SharePoint:  /:x:/s/{site}/{token}
     const ms = u.pathname.match(/\/:[a-z]:\/[a-z]\/(sites\/[^/]+)\/([^/?]+)/i);
     if (ms) {
       return u.origin + '/' + ms[1] + '/_layouts/15/download.aspx?share=' + ms[2];
@@ -29,10 +30,10 @@ function toDownloadUrl(shareUrl) {
 }
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const cors = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': '*',
     };
 
@@ -41,14 +42,26 @@ export default {
       return new Response(null, { headers: cors });
     }
 
-    const target = new URL(request.url).searchParams.get('url');
+    const reqUrl = new URL(request.url);
+
+    // ── 1. Verificación de contraseña (login del briefing) ──
+    if (reqUrl.pathname === '/auth') {
+      let pass = '';
+      try { pass = (await request.json()).pass || ''; } catch (e) { /* sin body */ }
+      const real = env && env.BRIEFING_PASSWORD ? env.BRIEFING_PASSWORD : '';
+      const ok = real !== '' && pass === real;
+      return new Response(JSON.stringify({ ok: ok }), {
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ── 2. Proxy de descarga del Excel desde SharePoint ──
+    const target = reqUrl.searchParams.get('url');
     if (!target) {
       return new Response('Falta el parametro ?url=', { status: 400, headers: cors });
     }
 
     try {
-      // 1) Si es un link "Compartir" de SharePoint, convertirlo a descarga directa.
-      // 2) Si no, intentar con download=1 (OneDrive personal, 1drv.ms).
       let dl = toDownloadUrl(target);
       if (!dl) {
         dl = target;
@@ -76,8 +89,6 @@ export default {
       const ct = resp.headers.get('content-type') || '';
       const buf = await resp.arrayBuffer();
 
-      // Si devolvio HTML en vez del archivo, casi seguro es una pagina de login:
-      // el link no es publico ("Cualquier persona con el vinculo").
       if (ct.includes('text/html')) {
         return new Response(
           'El link no devolvio un archivo Excel sino una pagina web. ' +
