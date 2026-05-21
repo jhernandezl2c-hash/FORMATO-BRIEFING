@@ -2237,8 +2237,7 @@ document.querySelectorAll('[data-store]').forEach(el => {
   el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
 });
 document.getElementById('btn-add-advisor').addEventListener('click', onAddAdvisor);
-document.getElementById('btn-export').addEventListener('click', onExport);
-document.getElementById('btn-import').addEventListener('click', onImport);
+// btn-export y btn-import eliminados del toolbar
 document.getElementById('btn-reset').addEventListener('click', onReset);
 document.getElementById('btn-pbi').addEventListener('click', openPBIModal);
 
