@@ -1,2 +1,19 @@
 # Local Netlify folder
 .netlify
+
+# Dependencias
+node_modules/
+
+# Config local de herramientas
+.claude/
+.agents/
+.vs/
+skills-lock.json
+
+# Tooling npm (no necesario para el sitio)
+package.json
+package-lock.json
+
+# Respaldos locales
+index_backup_v1.html
+*_backup_*.html
